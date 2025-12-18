@@ -1,97 +1,173 @@
 <template>
   <div class="wrapper">
-    <!-- header部分 -->
+    <!-- header -->
     <header>
-      <p>用户登陆</p>
+      <div class="icon-location-box">
+        <div class="icon-location"></div>
+      </div>
+      <div class="location-text">
+        沈阳市规划大厦
+        <i class="fa fa-caret-down"></i>
+      </div>
     </header>
 
-    <!-- 表单部分 -->
-    <ul class="form-box">
+    <!-- search -->
+    <div class="search">
+      <div class="search-fixed-top" ref="fixedBox">
+        <div class="search-box">
+          <i class="fa fa-search"></i>
+          搜索饿了么商家、商品名称
+        </div>
+      </div>
+    </div>
+
+    <!-- food type -->
+    <ul class="foodtype">
+      <li @click="toBusinessList(1)">
+        <img src="../assets/img/dcfl01.png" />
+        <p>美食</p>
+      </li>
+      <li @click="toBusinessList(2)">
+        <img src="../assets/img/dcfl02.png" />
+        <p>早餐</p>
+      </li>
+      <li @click="toBusinessList(3)">
+        <img src="../assets/img/dcfl03.png" />
+        <p>跑腿代购</p>
+      </li>
+      <li @click="toBusinessList(4)">
+        <img src="../assets/img/dcfl04.png" />
+        <p>汉堡披萨</p>
+      </li>
+      <li @click="toBusinessList(5)">
+        <img src="../assets/img/dcfl05.png" />
+        <p>甜品饮品</p>
+      </li>
+      <li @click="toBusinessList(6)">
+        <img src="../assets/img/dcfl06.png" />
+        <p>速食简餐</p>
+      </li>
+      <li @click="toBusinessList(7)">
+        <img src="../assets/img/dcfl07.png" />
+        <p>地方小吃</p>
+      </li>
+      <li @click="toBusinessList(8)">
+        <img src="../assets/img/dcfl08.png" />
+        <p>米粉面馆</p>
+      </li>
+      <li @click="toBusinessList(9)">
+        <img src="../assets/img/dcfl09.png" />
+        <p>包子粥铺</p>
+      </li>
+      <li @click="toBusinessList(10)">
+        <img src="../assets/img/dcfl10.png" />
+        <p>炸鸡炸串</p>
+      </li>
+    </ul>
+
+    <!-- banner -->
+    <div class="banner">
+      <h3>品质套餐</h3>
+      <p>搭配齐全吃得好</p>
+      <a>立即抢购 &gt;</a>
+    </div>
+
+    <!-- super member -->
+    <div class="supermember">
+      <div class="left">
+        <img src="../assets/img/super_member.png" />
+        <div>
+          <h3>超级会员</h3>
+          <p>• 每月享超值权益</p>
+        </div>
+      </div>
+      <div class="right">立即开通 &gt;</div>
+    </div>
+
+    <!-- recommend title -->
+    <div class="recommend">
+      <div class="recommend-line"></div>
+      <p>推荐商家</p>
+      <div class="recommend-line"></div>
+    </div>
+
+    <!-- recommend type -->
+    <ul class="recommendtype">
+      <li>综合排序 <i class="fa fa-caret-down"></i></li>
+      <li>距离最近</li>
+      <li>销量最高</li>
+      <li>筛选 <i class="fa fa-filter"></i></li>
+    </ul>
+
+    <!-- business list（静态示例） -->
+    <ul class="business">
       <li>
-        <div class="title">手机号码：</div>
-        <div class="content">
-          <input type="text" v-model="userId" placeholder="手机号码">
+        <img src="../assets/img/sj01.png" />
+        <div class="business-info">
+          <h3>万家饺子（软件园E18店）</h3>
+          <p>￥15起送 | ￥3配送</p>
         </div>
       </li>
       <li>
-        <div class="title">密码：</div>
-        <div class="content">
-          <input type="password" v-model="password" placeholder="密码">
+        <img src="../assets/img/sj02.png" />
+        <div class="business-info">
+          <h3>小锅饭豆腐馆（全运店）</h3>
+          <p>￥15起送 | ￥3配送</p>
         </div>
       </li>
     </ul>
 
-    <!-- 按钮 -->
-    <div class="button-login">
-      <button @click="login">登陆</button>
-    </div>
-    <div class="button-register">
-      <button @click="register">去注册</button>
-    </div>
-
-    <!-- 底部菜单部分 -->
+    <!-- footer -->
     <Footer />
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import request from '../utils/request'  // 使用自定义的 request
 import Footer from '../components/Footer.vue'
 
 const router = useRouter()
-const userId = ref('')
-const password = ref('')
+const fixedBox = ref(null)
 
-// SessionStorage 方法
-const getSessionStorage = (key) => {
-  const item = sessionStorage.getItem(key)
-  return item ? JSON.parse(item) : null
+// 跳转到商家列表页面
+const toBusinessList = (orderTypeId) => {
+  router.push({
+    path: '/businessList',
+    query: { orderTypeId }
+  })
 }
 
-const setSessionStorage = (key, value) => {
-  sessionStorage.setItem(key, JSON.stringify(value))
-}
+// 滚动处理
+const handleScroll = () => {
+  const scrollTop = document.documentElement.scrollTop || document.body.scrollTop
+  const width = document.documentElement.clientWidth
+  const search = fixedBox.value
 
-const login = async () => {
-  if (!userId.value) {
-    alert('手机号码不能为空！')
-    return
-  }
-  if (!password.value) {
-    alert('密码不能为空！')
-    return
-  }
-
-  try {
-    const user = await request.post(
-      'UserController/getUserByIdByPass',
-      { userId: userId.value, password: password.value }
-    )
-
-    if (!user) {
-      alert('用户名或密码不正确！')
+  if (search) {
+    if (scrollTop > width * 0.12) {
+      search.style.position = 'fixed'
+      search.style.top = '0'
+      search.style.left = '0'
+      search.style.zIndex = '999'
     } else {
-      // sessionstorage有容量限制，为防止数据溢出，不存储userImg
-      user.userImg = ''
-      setSessionStorage('user', user)
-      router.back()
+      search.style.position = 'static'
     }
-  } catch (error) {
-    console.error(error)
-    alert('登录失败，请重试')
   }
 }
 
-const register = () => {
-  router.push({ path: '/register' })
-}
+onMounted(() => {
+  // 添加滚动监听
+  window.addEventListener('scroll', handleScroll)
+})
+
+onUnmounted(() => {
+  // 移除滚动监听
+  window.removeEventListener('scroll', handleScroll)
+})
 </script>
 
 <style scoped>
-/* 样式保持不变 */
-/****************** 总容器 ******************/
 .wrapper {
   width: 100%;
   height: 100%;
@@ -99,82 +175,166 @@ const register = () => {
 
 /****************** header部分 ******************/
 .wrapper header {
-  width: 100%;
   height: 12vw;
-  background-color: #0097FF;
+  background-color: #0097ff;
+  display: flex;
+  align-items: center;
   color: #fff;
-  font-size: 4.8vw;
-  position: fixed;
-  left: 0;
-  top: 0;
-  z-index: 1000;
+  padding-left: 3vw;
+}
+
+.wrapper header .location-text {
+  font-size: 4.5vw;
+  font-weight: bold;
+}
+
+/****************** 搜索部分 ******************/
+.wrapper .search {
+  height: 13vw;
+}
+
+.wrapper .search .search-fixed-top {
+  height: 13vw;
+  background-color: #0097ff;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-/****************** 表单部分 ******************/
-.wrapper .form-box {
-  width: 100%;
-  margin-top: 12vw;
+.wrapper .search .search-fixed-top .search-box {
+  width: 90%;
+  height: 9vw;
+  background: #fff;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3.5vw;
+  color: #aaa;
 }
 
-.wrapper .form-box li {
-  box-sizing: border-box;
-  padding: 4vw 3vw 0 3vw;
+/****************** 食品分类部分 ******************/
+.wrapper .foodtype {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  padding: 3vw 0;
+}
+
+.wrapper .foodtype li {
+  width: 18vw;
+  text-align: center;
+  margin-bottom: 3vw;
+  cursor: pointer;
+}
+
+.wrapper .foodtype li img {
+  width: 12vw;
+}
+
+/****************** 横幅部分 ******************/
+.wrapper .banner {
+  width: 95%;
+  margin: 2vw auto;
+  height: 29vw;
+  background: url("../assets/img/index_banner.png") no-repeat center/cover;
+  padding: 3vw;
+}
+
+/****************** 超级会员部分 ******************/
+.wrapper .supermember {
+  width: 95%;
+  margin: 2vw auto;
+  height: 11vw;
+  background: #feedc1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 3vw;
+}
+
+.wrapper .supermember .left {
   display: flex;
   align-items: center;
 }
 
-.wrapper .form-box li .title {
-  flex: 0 0 18vw;
-  font-size: 3vw;
-  font-weight: 700;
+.wrapper .supermember .left img {
+  width: 8vw;
+  height: 8vw;
+  margin-right: 2vw;
+}
+
+.wrapper .supermember .right {
+  color: #ff6600;
+  font-weight: bold;
+}
+
+/****************** 推荐商家标题 ******************/
+.wrapper .recommend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 4vw 0;
+}
+
+.wrapper .recommend .recommend-line {
+  width: 20%;
+  height: 1px;
+  background: #ccc;
+}
+
+.wrapper .recommend p {
+  margin: 0 2vw;
+  font-size: 4vw;
+  color: #555;
+}
+
+/****************** 推荐类型筛选 ******************/
+.wrapper .recommendtype {
+  display: flex;
+  justify-content: space-around;
+  padding: 2vw 0;
+  border-bottom: 1px solid #eee;
+}
+
+.wrapper .recommendtype li {
+  font-size: 3.5vw;
   color: #666;
+  padding: 1vw 2vw;
+  border-radius: 3vw;
+  background: #f5f5f5;
+  cursor: pointer;
 }
 
-.wrapper .form-box li .content {
-  flex: 1;
-}
-
-.wrapper .form-box li .content input {
-  border: none;
-  outline: none;
+/****************** 商家列表部分 ******************/
+.wrapper .business {
   width: 100%;
-  height: 4vw;
-  font-size: 3vw;
+  margin-top: 2vw;
+  margin-bottom: 14vw;
 }
 
-/****************** 按钮 ******************/
-.wrapper .button-login,
-.wrapper .button-register {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 4vw 3vw 0 3vw;
+.wrapper .business li {
+  display: flex;
+  padding: 3vw;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
 }
 
-.wrapper .button-login button {
-  width: 100%;
-  height: 10vw;
-  font-size: 3.8vw;
-  font-weight: 700;
-  color: #fff;
-  background-color: #38CA73;
-  border-radius: 4px;
-  border: none;
-  outline: none;
+.wrapper .business li img {
+  width: 20vw;
+  height: 20vw;
+  margin-right: 3vw;
+  border-radius: 2vw;
 }
 
-.wrapper .button-register button {
-  width: 100%;
-  height: 10vw;
-  font-size: 3.8vw;
-  font-weight: 700;
-  color: #666;
-  background-color: #EEE;
-  border: solid 1px #DDD;
-  border-radius: 4px;
-  border: none;
-  outline: none;
+.wrapper .business li .business-info h3 {
+  font-size: 4vw;
+  color: #333;
+  margin-bottom: 1vw;
+}
+
+.wrapper .business li .business-info p {
+  font-size: 3.2vw;
+  color: #888;
 }
 </style>
