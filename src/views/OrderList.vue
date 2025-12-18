@@ -8,11 +8,11 @@
     <!-- 未支付订单列表 -->
     <h3>未支付订单信息：</h3>
     <ul class="order">
-      <li v-for="item in orderArr" :key="item.orderId" v-if="item.orderState === 0">
+      <li v-for="item in unpaidOrders" :key="item.orderId">
         <div class="order-info">
           <p>
             {{ item.business.businessName }}
-            <i class="fa fa-caret-down" @click="detailetShow(item)"></i>
+            <i class="fa fa-caret-down" @click="toggleDetail(item)"></i>
           </p>
           <div class="order-info-right">
             <p>&#165;{{ item.orderTotal }}</p>
@@ -35,11 +35,11 @@
     <!-- 已支付订单列表 -->
     <h3>已支付订单信息：</h3>
     <ul class="order">
-      <li v-for="item in orderArr" :key="item.orderId" v-if="item.orderState === 1">
+      <li v-for="item in paidOrders" :key="item.orderId">
         <div class="order-info">
           <p>
             {{ item.business.businessName }}
-            <i class="fa fa-caret-down" @click="detailetShow(item)"></i>
+            <i class="fa fa-caret-down" @click="toggleDetail(item)"></i>
           </p>
           <div class="order-info-right">
             <p>&#165;{{ item.orderTotal }}</p>
@@ -63,38 +63,58 @@
   </div>
 </template>
 
-<script>
-import Footer from '../components/Footer.vue';
+<script setup>
+import { ref, computed, onMounted } from 'vue'
+import axios from 'axios'
+import qs from 'qs'
+import Footer from '../components/Footer.vue'
 
-export default {
-  name: 'OrderList',
-  components: { Footer },
-  data() {
-    return {
-      orderArr: [],
-      user: {}
-    };
-  },
-  created() {
-    this.user = this.$getSessionStorage('user');
-    this.$axios.post('OrdersController/listOrdersByUserId', this.$qs.stringify({ userId: this.user.userId }))
-      .then(response => {
-        const result = response.data;
-        result.forEach(order => {
-          order.isShowDetailet = false;
-        });
-        this.orderArr = result;
-      })
-      .catch(error => {
-        console.error(error);
-      });
-  },
-  methods: {
-    detailetShow(order) {
-      order.isShowDetailet = !order.isShowDetailet;
-    }
+const orderArr = ref([])
+
+// SessionStorage 方法
+const getSessionStorage = (key) => {
+  const item = sessionStorage.getItem(key)
+  return item ? JSON.parse(item) : null
+}
+
+// 计算属性：未支付订单
+const unpaidOrders = computed(() => {
+  return orderArr.value.filter(item => item.orderState === 0)
+})
+
+// 计算属性：已支付订单
+const paidOrders = computed(() => {
+  return orderArr.value.filter(item => item.orderState === 1)
+})
+
+// 获取订单列表
+const fetchOrders = async () => {
+  const user = getSessionStorage('user')
+  if (!user) return
+
+  try {
+    const response = await axios.post(
+      'OrdersController/listOrdersByUserId',
+      qs.stringify({ userId: user.userId })
+    )
+    const result = response.data.map(order => ({
+      ...order,
+      isShowDetailet: false
+    }))
+    orderArr.value = result
+  } catch (error) {
+    console.error(error)
   }
-};
+}
+
+// 切换订单明细显示
+const toggleDetail = (order) => {
+  order.isShowDetailet = !order.isShowDetailet
+}
+
+onMounted(() => {
+  fetchOrders()
+})
 </script>
 
 <style scoped>

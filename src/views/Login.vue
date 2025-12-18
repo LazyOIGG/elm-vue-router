@@ -34,57 +34,65 @@
   </div>
 </template>
 
-<script>
-import Footer from '../components/Footer.vue';
+<script setup>
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import axios from 'axios'
+import qs from 'qs'
+import Footer from '../components/Footer.vue'
 
-export default {
-  name: 'Login',
-  components: { Footer },
-  data() {
-    return {
-      userId: '',
-      password: ''
-    };
-  },
-  methods: {
-    login() {
-      if (!this.userId) {
-        alert('手机号码不能为空！');
-        return;
-      }
-      if (!this.password) {
-        alert('密码不能为空！');
-        return;
-      }
+const router = useRouter()
+const userId = ref('')
+const password = ref('')
 
-      // 登录请求
-      this.$axios.post(
-        'UserController/getUserByIdByPass',
-        this.$qs.stringify({ userId: this.userId, password: this.password })
-      )
-      .then(response => {
-        let user = response.data;
-        if (!user) {
-          alert('用户名或密码不正确！');
-        } else {
-          // sessionstorage有容量限制，为防止数据溢出，不存储userImg
-          user.userImg = '';
-          this.$setSessionStorage('user', user);
-          this.$router.go(-1);
-        }
-      })
-      .catch(error => {
-        console.error(error);
-      });
-    },
-    register() {
-      this.$router.push({ path: 'register' });
-    }
+// SessionStorage 方法
+const getSessionStorage = (key) => {
+  const item = sessionStorage.getItem(key)
+  return item ? JSON.parse(item) : null
+}
+
+const setSessionStorage = (key, value) => {
+  sessionStorage.setItem(key, JSON.stringify(value))
+}
+
+const login = async () => {
+  if (!userId.value) {
+    alert('手机号码不能为空！')
+    return
   }
-};
+  if (!password.value) {
+    alert('密码不能为空！')
+    return
+  }
+
+  try {
+    const response = await axios.post(
+      'UserController/getUserByIdByPass',
+      qs.stringify({ userId: userId.value, password: password.value })
+    )
+
+    let user = response.data
+    if (!user) {
+      alert('用户名或密码不正确！')
+    } else {
+      // sessionstorage有容量限制，为防止数据溢出，不存储userImg
+      user.userImg = ''
+      setSessionStorage('user', user)
+      router.back()
+    }
+  } catch (error) {
+    console.error(error)
+    alert('登录失败，请重试')
+  }
+}
+
+const register = () => {
+  router.push({ path: '/register' })
+}
 </script>
 
 <style scoped>
+/* 样式保持不变 */
 /****************** 总容器 ******************/
 .wrapper {
   width: 100%;
@@ -170,37 +178,5 @@ export default {
   border-radius: 4px;
   border: none;
   outline: none;
-}
-
-/****************** 底部菜单部分 ******************/
-.wrapper .footer {
-  width: 100%;
-  height: 14vw;
-  border-top: solid 1px #DDD;
-  background-color: #fff;
-  position: fixed;
-  left: 0;
-  bottom: 0;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-}
-
-.wrapper .footer li {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  color: #999;
-  user-select: none;
-  cursor: pointer;
-}
-
-.wrapper .footer li p {
-  font-size: 2.8vw;
-}
-
-.wrapper .footer li i {
-  font-size: 5vw;
 }
 </style>

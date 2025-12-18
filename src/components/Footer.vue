@@ -19,18 +19,18 @@
   </ul>
 </template>
 
-<script>
-export default {
-  name: 'Footer',
-  methods: {
-    toIndex() {
-      this.$router.push({ path: '/index' });
-    },
-    toOrderList() {
-      this.$router.push({ path: '/orderList' });
-    }
-  }
-};
+<script setup>
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+const toIndex = () => {
+  router.push({ path: '/index' })
+}
+
+const toOrderList = () => {
+  router.push({ path: '/orderList' })
+}
 </script>
 
 <style scoped>

@@ -38,82 +38,77 @@
   </div>
 </template>
 
-<script>
-import Footer from '../components/Footer.vue';
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import axios from 'axios'
+import qs from 'qs'
+import Footer from '../components/Footer.vue'
 
-export default {
-  name: 'BusinessList',
-  components: {
-    Footer
-  },
-  data() {
-    return {
-      orderTypeId: this.$route.query.orderTypeId,
-      businessArr: [],
-      user: {}
-    };
-  },
-  created() {
-    // 获取登录用户
-    this.user = this.$getSessionStorage('user');
+const route = useRoute()
+const router = useRouter()
 
-    // 根据 orderTypeId 查询商家信息
-    this.$axios
-      .post(
-        'BusinessController/listBusinessByOrderTypeId',
-        this.$qs.stringify({
-          orderTypeId: this.orderTypeId
-        })
-      )
-      .then(response => {
-        this.businessArr = response.data;
+const orderTypeId = ref(route.query.orderTypeId)
+const businessArr = ref([])
 
-        // 已登录则查询购物车
-        if (this.user != null) {
-          this.listCart();
+// SessionStorage 方法
+const getSessionStorage = (key) => {
+  const item = sessionStorage.getItem(key)
+  return item ? JSON.parse(item) : null
+}
+
+// 获取商家列表
+const fetchBusinesses = async () => {
+  try {
+    const response = await axios.post(
+      'BusinessController/listBusinessByOrderTypeId',
+      qs.stringify({ orderTypeId: orderTypeId.value })
+    )
+    businessArr.value = response.data
+
+    // 已登录则查询购物车
+    const user = getSessionStorage('user')
+    if (user) {
+      await fetchCart(user)
+    }
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+// 查询购物车，统计每个商家的商品数量
+const fetchCart = async (user) => {
+  try {
+    const response = await axios.post(
+      'CartController/listCart',
+      qs.stringify({ userId: user.userId })
+    )
+    const cartArr = response.data
+
+    businessArr.value.forEach(businessItem => {
+      businessItem.quantity = 0
+      cartArr.forEach(cartItem => {
+        if (cartItem.businessId === businessItem.businessId) {
+          businessItem.quantity += cartItem.quantity
         }
       })
-      .catch(error => {
-        console.error(error);
-      });
-  },
-  methods: {
-    // 查询购物车，统计每个商家的商品数量
-    listCart() {
-      this.$axios
-        .post(
-          'CartController/listCart',
-          this.$qs.stringify({
-            userId: this.user.userId
-          })
-        )
-        .then(response => {
-          const cartArr = response.data;
-
-          for (let businessItem of this.businessArr) {
-            businessItem.quantity = 0;
-
-            for (let cartItem of cartArr) {
-              if (cartItem.businessId === businessItem.businessId) {
-                businessItem.quantity += cartItem.quantity;
-              }
-            }
-          }
-        })
-        .catch(error => {
-          console.error(error);
-        });
-    },
-
-    // 跳转商家详情页
-    toBusinessInfo(businessId) {
-      this.$router.push({
-        path: '/businessInfo',
-        query: { businessId }
-      });
-    }
+    })
+  } catch (error) {
+    console.error(error)
   }
-};
+}
+
+// 跳转商家详情页
+const toBusinessInfo = (businessId) => {
+  router.push({
+    path: '/businessInfo',
+    query: { businessId }
+  })
+}
+
+onMounted(() => {
+  fetchBusinesses()
+})
 </script>
 
 <style scoped>

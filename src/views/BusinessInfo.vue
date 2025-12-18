@@ -102,210 +102,193 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'BusinessInfo',
-  data() {
-    return {
-      businessId: this.$route.query.businessId,
-      business: {},
-      foodArr: [],
-      user: {}
-    };
-  },
-  created() {
-    this.user = this.$getSessionStorage('user');
+<script setup>
+import { ref, computed, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import axios from 'axios'
+import qs from 'qs'
 
-    // 根据 businessId 查询商家信息
-    this.$axios
-      .post(
-        'BusinessController/getBusinessById',
-        this.$qs.stringify({
-          businessId: this.businessId
-        })
-      )
-      .then(response => {
-        this.business = response.data;
-      })
-      .catch(error => {
-        console.error(error);
-      });
+const route = useRoute()
+const router = useRouter()
 
-    // 根据 businessId 查询食品信息
-    this.$axios
-      .post(
-        'FoodController/listFoodByBusinessId',
-        this.$qs.stringify({
-          businessId: this.businessId
-        })
-      )
-      .then(response => {
-        this.foodArr = response.data;
+const businessId = ref(route.query.businessId)
+const business = ref({})
+const foodArr = ref([])
+const user = ref({})
 
-        for (let item of this.foodArr) {
-          item.quantity = 0;
-        }
+// SessionStorage 方法
+const getSessionStorage = (key) => {
+  const item = sessionStorage.getItem(key)
+  return item ? JSON.parse(item) : null
+}
 
-        if (this.user != null) {
-          this.listCart();
-        }
-      })
-      .catch(error => {
-        console.error(error);
-      });
-  },
-  methods: {
-    listCart() {
-      this.$axios
-        .post(
-          'CartController/listCart',
-          this.$qs.stringify({
-            businessId: this.businessId,
-            userId: this.user.userId
-          })
-        )
-        .then(response => {
-          const cartArr = response.data;
+onMounted(async () => {
+  user.value = getSessionStorage('user')
 
-          for (let foodItem of this.foodArr) {
-            foodItem.quantity = 0;
-            for (let cartItem of cartArr) {
-              if (cartItem.foodId === foodItem.foodId) {
-                foodItem.quantity = cartItem.quantity;
-              }
-            }
-          }
-        })
-        .catch(error => {
-          console.error(error);
-        });
-    },
+  try {
+    // 获取商家信息
+    const businessRes = await axios.post(
+      'BusinessController/getBusinessById',
+      qs.stringify({ businessId: businessId.value })
+    )
+    business.value = businessRes.data
 
-    add(index) {
-      if (this.user == null) {
-        this.$router.push({ path: '/login' });
-        return;
-      }
+    // 获取食品信息
+    const foodRes = await axios.post(
+      'FoodController/listFoodByBusinessId',
+      qs.stringify({ businessId: businessId.value })
+    )
+    foodArr.value = foodRes.data.map(item => ({ ...item, quantity: 0 }))
 
-      if (this.foodArr[index].quantity === 0) {
-        this.saveCart(index);
-      } else {
-        this.updateCart(index, 1);
-      }
-    },
-
-    minus(index) {
-      if (this.user == null) {
-        this.$router.push({ path: '/login' });
-        return;
-      }
-
-      if (this.foodArr[index].quantity > 1) {
-        this.updateCart(index, -1);
-      } else {
-        this.removeCart(index);
-      }
-    },
-
-    saveCart(index) {
-      this.$axios
-        .post(
-          'CartController/saveCart',
-          this.$qs.stringify({
-            businessId: this.businessId,
-            userId: this.user.userId,
-            foodId: this.foodArr[index].foodId
-          })
-        )
-        .then(response => {
-          if (response.data === 1) {
-            this.foodArr[index].quantity = 1;
-          } else {
-            alert('向购物车中添加食品失败！');
-          }
-        })
-        .catch(error => {
-          console.error(error);
-        });
-    },
-
-    updateCart(index, num) {
-      this.$axios
-        .post(
-          'CartController/updateCart',
-          this.$qs.stringify({
-            businessId: this.businessId,
-            userId: this.user.userId,
-            foodId: this.foodArr[index].foodId,
-            quantity: this.foodArr[index].quantity + num
-          })
-        )
-        .then(response => {
-          if (response.data === 1) {
-            this.foodArr[index].quantity += num;
-          } else {
-            alert('向购物车中更新食品失败！');
-          }
-        })
-        .catch(error => {
-          console.error(error);
-        });
-    },
-
-    removeCart(index) {
-      this.$axios
-        .post(
-          'CartController/removeCart',
-          this.$qs.stringify({
-            businessId: this.businessId,
-            userId: this.user.userId,
-            foodId: this.foodArr[index].foodId
-          })
-        )
-        .then(response => {
-          if (response.data === 1) {
-            this.foodArr[index].quantity = 0;
-          } else {
-            alert('从购物车中删除食品失败！');
-          }
-        })
-        .catch(error => {
-          console.error(error);
-        });
-    },
-
-    toOrder() {
-      this.$router.push({
-        path: '/orders',
-        query: {
-          businessId: this.business.businessId
-        }
-      });
+    if (user.value) {
+      await listCart()
     }
-  },
-  computed: {
-    totalPrice() {
-      let total = 0;
-      for (let item of this.foodArr) {
-        total += item.foodPrice * item.quantity;
-      }
-      return total;
-    },
-    totalQuantity() {
-      let quantity = 0;
-      for (let item of this.foodArr) {
-        quantity += item.quantity;
-      }
-      return quantity;
-    },
-    totalSettle() {
-      return this.totalPrice + this.business.deliveryPrice;
-    }
+  } catch (error) {
+    console.error(error)
   }
-};
+})
+
+const listCart = async () => {
+  try {
+    const response = await axios.post(
+      'CartController/listCart',
+      qs.stringify({
+        businessId: businessId.value,
+        userId: user.value.userId
+      })
+    )
+
+    const cartArr = response.data
+    foodArr.value.forEach(foodItem => {
+      foodItem.quantity = 0
+      cartArr.forEach(cartItem => {
+        if (cartItem.foodId === foodItem.foodId) {
+          foodItem.quantity = cartItem.quantity
+        }
+      })
+    })
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+const add = async (index) => {
+  if (!user.value) {
+    router.push({ path: '/login' })
+    return
+  }
+
+  if (foodArr.value[index].quantity === 0) {
+    await saveCart(index)
+  } else {
+    await updateCart(index, 1)
+  }
+}
+
+const minus = async (index) => {
+  if (!user.value) {
+    router.push({ path: '/login' })
+    return
+  }
+
+  if (foodArr.value[index].quantity > 1) {
+    await updateCart(index, -1)
+  } else {
+    await removeCart(index)
+  }
+}
+
+const saveCart = async (index) => {
+  try {
+    const response = await axios.post(
+      'CartController/saveCart',
+      qs.stringify({
+        businessId: businessId.value,
+        userId: user.value.userId,
+        foodId: foodArr.value[index].foodId
+      })
+    )
+
+    if (response.data === 1) {
+      foodArr.value[index].quantity = 1
+    } else {
+      alert('向购物车中添加食品失败！')
+    }
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+const updateCart = async (index, num) => {
+  try {
+    const response = await axios.post(
+      'CartController/updateCart',
+      qs.stringify({
+        businessId: businessId.value,
+        userId: user.value.userId,
+        foodId: foodArr.value[index].foodId,
+        quantity: foodArr.value[index].quantity + num
+      })
+    )
+
+    if (response.data === 1) {
+      foodArr.value[index].quantity += num
+    } else {
+      alert('向购物车中更新食品失败！')
+    }
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+const removeCart = async (index) => {
+  try {
+    const response = await axios.post(
+      'CartController/removeCart',
+      qs.stringify({
+        businessId: businessId.value,
+        userId: user.value.userId,
+        foodId: foodArr.value[index].foodId
+      })
+    )
+
+    if (response.data === 1) {
+      foodArr.value[index].quantity = 0
+    } else {
+      alert('从购物车中删除食品失败！')
+    }
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+const toOrder = () => {
+  router.push({
+    path: '/orders',
+    query: { businessId: business.value.businessId }
+  })
+}
+
+// 计算属性
+const totalPrice = computed(() => {
+  return foodArr.value.reduce((total, item) => {
+    return total + item.foodPrice * item.quantity
+  }, 0)
+})
+
+const totalQuantity = computed(() => {
+  return foodArr.value.reduce((quantity, item) => {
+    return quantity + item.quantity
+  }, 0)
+})
+
+const totalSettle = computed(() => {
+  return totalPrice.value + business.value.deliveryPrice
+})
 </script>
 
 <style scoped>
+/* 样式保持不变 */
 /****************** 总容器 ******************/
 .wrapper {
   width: 100%;

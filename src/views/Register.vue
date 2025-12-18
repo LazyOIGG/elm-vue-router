@@ -50,76 +50,75 @@
   </div>
 </template>
 
-<script>
-import Footer from '../components/Footer.vue';
+<script setup>
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import axios from 'axios'
+import qs from 'qs'
+import Footer from '../components/Footer.vue'
 
-export default {
-  name: 'Register',
-  components: { Footer },
-  data() {
-    return {
-      user: {
-        userId: '',
-        password: '',
-        userName: '',
-        userSex: 1
-      },
-      confirmPassword: ''
-    };
-  },
-  methods: {
-    // 手机号校验
-    checkUserId() {
-      if (!this.user.userId) return;
-      this.$axios.post('UserController/getUserById', this.$qs.stringify({
-        userId: this.user.userId
-      }))
-      .then(response => {
-        if (response.data == 1) {
-          this.user.userId = '';
-          alert('此手机号码已存在！');
-        }
-      })
-      .catch(error => {
-        console.error(error);
-      });
-    },
+const router = useRouter()
 
-    // 注册方法
-    register() {
-      if (!this.user.userId) {
-        alert('手机号码不能为空！');
-        return;
-      }
-      if (!this.user.password) {
-        alert('密码不能为空！');
-        return;
-      }
-      if (this.user.password !== this.confirmPassword) {
-        alert('两次输入的密码不一致！');
-        return;
-      }
-      if (!this.user.userName) {
-        alert('用户名不能为空！');
-        return;
-      }
+const user = ref({
+  userId: '',
+  password: '',
+  userName: '',
+  userSex: 1
+})
+const confirmPassword = ref('')
 
-      // 注册请求
-      this.$axios.post('UserController/saveUser', this.$qs.stringify(this.user))
-      .then(response => {
-        if (response.data > 0) {
-          alert('注册成功！');
-          this.$router.go(-1);
-        } else {
-          alert('注册失败！');
-        }
-      })
-      .catch(error => {
-        console.error(error);
-      });
+// 手机号校验
+const checkUserId = async () => {
+  if (!user.value.userId) return
+
+  try {
+    const response = await axios.post(
+      'UserController/getUserById',
+      qs.stringify({ userId: user.value.userId })
+    )
+    if (response.data == 1) {
+      user.value.userId = ''
+      alert('此手机号码已存在！')
     }
+  } catch (error) {
+    console.error(error)
   }
-};
+}
+
+// 注册方法
+const register = async () => {
+  if (!user.value.userId) {
+    alert('手机号码不能为空！')
+    return
+  }
+  if (!user.value.password) {
+    alert('密码不能为空！')
+    return
+  }
+  if (user.value.password !== confirmPassword.value) {
+    alert('两次输入的密码不一致！')
+    return
+  }
+  if (!user.value.userName) {
+    alert('用户名不能为空！')
+    return
+  }
+
+  try {
+    const response = await axios.post(
+      'UserController/saveUser',
+      qs.stringify(user.value)
+    )
+    if (response.data > 0) {
+      alert('注册成功！')
+      router.back()
+    } else {
+      alert('注册失败！')
+    }
+  } catch (error) {
+    console.error(error)
+  }
+}
 </script>
 
 <style scoped>

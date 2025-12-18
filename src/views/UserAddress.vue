@@ -17,7 +17,7 @@
         >
           <h3>
             {{ item.contactName }}
-            {{ item.contactSex | sexFilter }}
+            {{ sexFilter(item.contactSex) }}
             {{ item.contactTel }}
           </h3>
           <p>{{ item.address }}</p>
@@ -50,115 +50,122 @@
   </div>
 </template>
 
-<script>
-import Footer from '../components/Footer.vue';
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import axios from 'axios'
+import qs from 'qs'
+import Footer from '../components/Footer.vue'
 
-export default {
-  name: 'UserAddress',
-  components: {
-    Footer
-  },
-  data() {
-    return {
-      businessId: this.$route.query.businessId,
-      user: {},
-      deliveryAddressArr: []
-    };
-  },
-  created() {
-    this.user = this.$getSessionStorage('user');
-    this.listDeliveryAddressByUserId();
-  },
-  filters: {
-    sexFilter(value) {
-      return value === 1 ? '先生' : '女士';
-    }
-  },
-  methods: {
-    // 查询用户的送货地址
-    listDeliveryAddressByUserId() {
-      this.$axios
-        .post(
-          'DeliveryAddressController/listDeliveryAddressByUserId',
-          this.$qs.stringify({
-            userId: this.user.userId
-          })
-        )
-        .then(response => {
-          this.deliveryAddressArr = response.data;
-        })
-        .catch(error => {
-          console.error(error);
-        });
-    },
+const route = useRoute()
+const router = useRouter()
 
-    // 设置默认送货地址
-    setDeliveryAddress(deliveryAddress) {
-      this.$setLocalStorage(
-        this.user.userId,
-        deliveryAddress
-      );
-      this.$router.push({
-        path: '/orders',
-        query: { businessId: this.businessId }
-      });
-    },
+const businessId = ref(route.query.businessId)
+const deliveryAddressArr = ref([])
 
-    // 跳转新增地址页
-    toAddUserAddress() {
-      this.$router.push({
-        path: '/addUserAddress',
-        query: { businessId: this.businessId }
-      });
-    },
+// Storage 方法
+const getSessionStorage = (key) => {
+  const item = sessionStorage.getItem(key)
+  return item ? JSON.parse(item) : null
+}
 
-    // 跳转编辑地址页
-    editUserAddress(daId) {
-      this.$router.push({
-        path: '/editUserAddress',
-        query: {
-          businessId: this.businessId,
-          daId
-        }
-      });
-    },
+const getLocalStorage = (key) => {
+  const item = localStorage.getItem(key)
+  return item ? JSON.parse(item) : null
+}
 
-    // 删除地址
-    removeUserAddress(daId) {
-      if (!confirm('确认要删除此送货地址吗？')) {
-        return;
-      }
+const setLocalStorage = (key, value) => {
+  localStorage.setItem(key, JSON.stringify(value))
+}
 
-      this.$axios
-        .post(
-          'DeliveryAddressController/removeDeliveryAddress',
-          this.$qs.stringify({
-            daId
-          })
-        )
-        .then(response => {
-          if (response.data > 0) {
-            const deliveryAddress =
-              this.$getLocalStorage(this.user.userId);
+const removeLocalStorage = (key) => {
+  localStorage.removeItem(key)
+}
 
-            if (
-              deliveryAddress != null &&
-              deliveryAddress.daId === daId
-            ) {
-              this.$removeLocalStorage(this.user.userId);
-            }
+// 性别过滤器
+const sexFilter = (value) => {
+  return value === 1 ? '先生' : '女士'
+}
 
-            this.listDeliveryAddressByUserId();
-          } else {
-            alert('删除地址失败！');
-          }
-        })
-        .catch(error => {
-          console.error(error);
-        });
-    }
+// 获取用户地址列表
+const fetchDeliveryAddresses = async () => {
+  const user = getSessionStorage('user')
+  if (!user) return
+
+  try {
+    const response = await axios.post(
+      'DeliveryAddressController/listDeliveryAddressByUserId',
+      qs.stringify({ userId: user.userId })
+    )
+    deliveryAddressArr.value = response.data
+  } catch (error) {
+    console.error(error)
   }
-};
+}
+
+// 设置默认送货地址
+const setDeliveryAddress = (deliveryAddress) => {
+  const user = getSessionStorage('user')
+  if (!user) return
+
+  setLocalStorage(user.userId, deliveryAddress)
+  router.push({
+    path: '/orders',
+    query: { businessId: businessId.value }
+  })
+}
+
+// 跳转新增地址页
+const toAddUserAddress = () => {
+  router.push({
+    path: '/addUserAddress',
+    query: { businessId: businessId.value }
+  })
+}
+
+// 跳转编辑地址页
+const editUserAddress = (daId) => {
+  router.push({
+    path: '/editUserAddress',
+    query: {
+      businessId: businessId.value,
+      daId
+    }
+  })
+}
+
+// 删除地址
+const removeUserAddress = async (daId) => {
+  if (!confirm('确认要删除此送货地址吗？')) {
+    return
+  }
+
+  try {
+    const response = await axios.post(
+      'DeliveryAddressController/removeDeliveryAddress',
+      qs.stringify({ daId })
+    )
+
+    if (response.data > 0) {
+      const user = getSessionStorage('user')
+      if (user) {
+        const deliveryAddress = getLocalStorage(user.userId)
+        if (deliveryAddress && deliveryAddress.daId === daId) {
+          removeLocalStorage(user.userId)
+        }
+      }
+      await fetchDeliveryAddresses()
+    } else {
+      alert('删除地址失败！')
+    }
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+onMounted(() => {
+  fetchDeliveryAddresses()
+})
 </script>
 
 <style scoped>

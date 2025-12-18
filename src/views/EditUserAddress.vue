@@ -69,78 +69,81 @@
   </div>
 </template>
 
-<script>
-import Footer from '../components/Footer.vue';
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import axios from 'axios'
+import qs from 'qs'
+import Footer from '../components/Footer.vue'
 
-export default {
-  name: 'EditUserAddress',
-  components: {
-    Footer
-  },
-  data() {
-    return {
-      businessId: this.$route.query.businessId,
-      daId: this.$route.query.daId,
-      user: {},
-      deliveryAddress: {}
-    };
-  },
-  created() {
-    this.user = this.$getSessionStorage('user');
+const route = useRoute()
+const router = useRouter()
 
-    // 根据 daId 查询送货地址
-    this.$axios
-      .post(
-        'DeliveryAddressController/getDeliveryAddressById',
-        this.$qs.stringify({
-          daId: this.daId
-        })
-      )
-      .then(response => {
-        this.deliveryAddress = response.data;
-      })
-      .catch(error => {
-        console.error(error);
-      });
-  },
-  methods: {
-    editUserAddress() {
-      if (this.deliveryAddress.contactName === '') {
-        alert('联系人姓名不能为空！');
-        return;
-      }
-      if (this.deliveryAddress.contactTel === '') {
-        alert('联系人电话不能为空！');
-        return;
-      }
-      if (this.deliveryAddress.address === '') {
-        alert('联系人地址不能为空！');
-        return;
-      }
+const businessId = ref(route.query.businessId)
+const daId = ref(route.query.daId)
+const deliveryAddress = ref({})
 
-      this.$axios
-        .post(
-          'DeliveryAddressController/updateDeliveryAddress',
-          this.$qs.stringify(this.deliveryAddress)
-        )
-        .then(response => {
-          if (response.data > 0) {
-            this.$router.push({
-              path: '/userAddress',
-              query: {
-                businessId: this.businessId
-              }
-            });
-          } else {
-            alert('更新地址失败！');
-          }
-        })
-        .catch(error => {
-          console.error(error);
-        });
-    }
+// SessionStorage 方法
+const getSessionStorage = (key) => {
+  const item = sessionStorage.getItem(key)
+  return item ? JSON.parse(item) : null
+}
+
+// 获取地址详情
+const fetchDeliveryAddress = async () => {
+  try {
+    const response = await axios.post(
+      'DeliveryAddressController/getDeliveryAddressById',
+      qs.stringify({ daId: daId.value })
+    )
+    deliveryAddress.value = response.data
+  } catch (error) {
+    console.error(error)
   }
-};
+}
+
+// 编辑用户地址
+const editUserAddress = async () => {
+  if (!deliveryAddress.value.contactName) {
+    alert('联系人姓名不能为空！')
+    return
+  }
+  if (!deliveryAddress.value.contactTel) {
+    alert('联系人电话不能为空！')
+    return
+  }
+  if (!deliveryAddress.value.address) {
+    alert('联系人地址不能为空！')
+    return
+  }
+
+  try {
+    const response = await axios.post(
+      'DeliveryAddressController/updateDeliveryAddress',
+      qs.stringify(deliveryAddress.value)
+    )
+    if (response.data > 0) {
+      router.push({
+        path: '/userAddress',
+        query: { businessId: businessId.value }
+      })
+    } else {
+      alert('更新地址失败！')
+    }
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+onMounted(() => {
+  const user = getSessionStorage('user')
+  if (!user) {
+    router.push('/login')
+    return
+  }
+
+  fetchDeliveryAddress()
+})
 </script>
 
 <style scoped>

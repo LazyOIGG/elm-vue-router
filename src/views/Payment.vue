@@ -62,61 +62,56 @@
   </div>
 </template>
 
-<script>
-import Footer from '../components/Footer.vue';
+<script setup>
+import { ref, onMounted, onUnmounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import axios from 'axios'
+import qs from 'qs'
+import Footer from '../components/Footer.vue'
 
-export default {
-  name: 'Payment',
-  components: {
-    Footer
-  },
-  data() {
-    return {
-      orderId: this.$route.query.orderId,
-      orders: {
-        business: {}
-      },
-      isShowDetailet: false
-    };
-  },
-  created() {
-    this.$axios
-      .post(
-        'OrdersController/getOrdersById',
-        this.$qs.stringify({
-          orderId: this.orderId
-        })
-      )
-      .then(response => {
-        this.orders = response.data;
-      })
-      .catch(error => {
-        console.error(error);
-      });
-  },
-  mounted() {
-    // 禁止从支付页返回订单确认页
-    history.pushState(
-      null,
-      null,
-      document.URL
-    );
+const route = useRoute()
+const router = useRouter()
 
-    window.onpopstate = () => {
-      this.$router.push({
-        path: '/index'
-      });
-    };
-  },
-  destroyed() {
-    window.onpopstate = null;
-  },
-  methods: {
-    detailetShow() {
-      this.isShowDetailet = !this.isShowDetailet;
-    }
+const orderId = ref(route.query.orderId)
+const orders = ref({
+  business: {}
+})
+const isShowDetailet = ref(false)
+
+// 获取订单信息
+const fetchOrder = async () => {
+  try {
+    const response = await axios.post(
+      'OrdersController/getOrdersById',
+      qs.stringify({ orderId: orderId.value })
+    )
+    orders.value = response.data
+  } catch (error) {
+    console.error(error)
   }
-};
+}
+
+// 显示/隐藏订单明细
+const detailetShow = () => {
+  isShowDetailet.value = !isShowDetailet.value
+}
+
+// 禁止从支付页返回订单确认页
+const handlePopState = () => {
+  router.push({ path: '/index' })
+}
+
+onMounted(() => {
+  fetchOrder()
+
+  // 禁止返回
+  history.pushState(null, null, document.URL)
+  window.addEventListener('popstate', handlePopState)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('popstate', handlePopState)
+})
 </script>
 
 <style scoped>

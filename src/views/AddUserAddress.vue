@@ -69,67 +69,81 @@
   </div>
 </template>
 
-<script>
-import Footer from '../components/Footer.vue';
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import axios from 'axios'
+import qs from 'qs'
+import Footer from '../components/Footer.vue'
 
-export default {
-  name: 'AddUserAddress',
-  components: {
-    Footer
-  },
-  data() {
-    return {
-      businessId: this.$route.query.businessId,
-      user: {},
-      deliveryAddress: {
-        contactName: '',
-        contactSex: 1,
-        contactTel: '',
-        address: ''
-      }
-    };
-  },
-  created() {
-    this.user = this.$getSessionStorage('user');
-  },
-  methods: {
-    addUserAddress() {
-      if (this.deliveryAddress.contactName === '') {
-        alert('联系人姓名不能为空！');
-        return;
-      }
-      if (this.deliveryAddress.contactTel === '') {
-        alert('联系人电话不能为空！');
-        return;
-      }
-      if (this.deliveryAddress.address === '') {
-        alert('联系人地址不能为空！');
-        return;
-      }
+const route = useRoute()
+const router = useRouter()
 
-      this.deliveryAddress.userId = this.user.userId;
+const businessId = ref(route.query.businessId)
+const deliveryAddress = ref({
+  contactName: '',
+  contactSex: 1,
+  contactTel: '',
+  address: ''
+})
 
-      this.$axios
-        .post(
-          'DeliveryAddressController/saveDeliveryAddress',
-          this.$qs.stringify(this.deliveryAddress)
-        )
-        .then(response => {
-          if (response.data > 0) {
-            this.$router.push({
-              path: '/userAddress',
-              query: { businessId: this.businessId }
-            });
-          } else {
-            alert('新增地址失败！');
-          }
-        })
-        .catch(error => {
-          console.error(error);
-        });
-    }
+// SessionStorage 方法
+const getSessionStorage = (key) => {
+  const item = sessionStorage.getItem(key)
+  return item ? JSON.parse(item) : null
+}
+
+// 添加用户地址
+const addUserAddress = async () => {
+  if (!deliveryAddress.value.contactName) {
+    alert('联系人姓名不能为空！')
+    return
   }
-};
+  if (!deliveryAddress.value.contactTel) {
+    alert('联系人电话不能为空！')
+    return
+  }
+  if (!deliveryAddress.value.address) {
+    alert('联系人地址不能为空！')
+    return
+  }
+
+  const user = getSessionStorage('user')
+  if (!user) {
+    alert('用户未登录')
+    return
+  }
+
+  const addressData = {
+    ...deliveryAddress.value,
+    userId: user.userId
+  }
+
+  try {
+    const response = await axios.post(
+      'DeliveryAddressController/saveDeliveryAddress',
+      qs.stringify(addressData)
+    )
+    if (response.data > 0) {
+      router.push({
+        path: '/userAddress',
+        query: { businessId: businessId.value }
+      })
+    } else {
+      alert('新增地址失败！')
+    }
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+onMounted(() => {
+  // 确保用户已登录
+  const user = getSessionStorage('user')
+  if (!user) {
+    router.push('/login')
+  }
+})
 </script>
 
 <style scoped>

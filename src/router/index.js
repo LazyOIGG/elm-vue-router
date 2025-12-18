@@ -61,7 +61,7 @@ const router = createRouter({
       path: '/orderList',
       name: 'orderList',
       component: () => import('../views/OrderList.vue')
-    },
+    }
   ]
 })
 

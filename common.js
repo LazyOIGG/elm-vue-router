@@ -3,7 +3,7 @@ import axios from 'axios'
 import qs from 'qs'
 
 // 设置axios默认配置
-axios.defaults.baseURL = 'http://localhost:8081/elm/'  // 注意这里要指向本地代理
+axios.defaults.baseURL = 'http://localhost:8086/'  // 注意这里要指向本地代理
 axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded'
 
 const common = {
