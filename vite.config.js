@@ -16,16 +16,22 @@ export default defineConfig({
         },
     },
     server: {
-        port: 8081,
+        port: 8086,
         host: 'localhost',
         open: false,
         // 添加代理配置
         proxy: {
-            '/elm': {  // 代理所有以 /elm 开头的请求
-                target: 'http://localhost:8080',  // 后端服务器地址
+            // 代理所有以 /elm_api 开头的请求
+            '/elm_api': {
+                target: 'http://localhost:8085',
                 changeOrigin: true,
-                secure: false,
-                rewrite: (path) => path.replace(/^\/elm/, '')
+                rewrite: (path) => path.replace(/^\/elm_api/, '/elm_api')
+            },
+            // 或者直接代理所有请求
+            '/api': {
+                target: 'http://localhost:8085/elm_api',
+                changeOrigin: true,
+                rewrite: (path) => path.replace(/^\/api/, '')
             }
         }
     }
