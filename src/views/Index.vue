@@ -24,43 +24,43 @@
     <!-- food type -->
     <ul class="foodtype">
       <li @click="toBusinessList(1)">
-        <img src="../assets/dcfl01.png" />
+        <img src="../assets/img/dcfl01.png" />
         <p>美食</p>
       </li>
       <li @click="toBusinessList(2)">
-        <img src="../assets/dcfl02.png" />
+        <img src="../assets/img/dcfl02.png" />
         <p>早餐</p>
       </li>
       <li @click="toBusinessList(3)">
-        <img src="../assets/dcfl03.png" />
+        <img src="../assets/img/dcfl03.png" />
         <p>跑腿代购</p>
       </li>
       <li @click="toBusinessList(4)">
-        <img src="../assets/dcfl04.png" />
+        <img src="../assets/img/dcfl04.png" />
         <p>汉堡披萨</p>
       </li>
       <li @click="toBusinessList(5)">
-        <img src="../assets/dcfl05.png" />
+        <img src="../assets/img/dcfl05.png" />
         <p>甜品饮品</p>
       </li>
       <li @click="toBusinessList(6)">
-        <img src="../assets/dcfl06.png" />
+        <img src="../assets/img/dcfl06.png" />
         <p>速食简餐</p>
       </li>
       <li @click="toBusinessList(7)">
-        <img src="../assets/dcfl07.png" />
+        <img src="../assets/img/dcfl07.png" />
         <p>地方小吃</p>
       </li>
       <li @click="toBusinessList(8)">
-        <img src="../assets/dcfl08.png" />
+        <img src="../assets/img/dcfl08.png" />
         <p>米粉面馆</p>
       </li>
       <li @click="toBusinessList(9)">
-        <img src="../assets/dcfl09.png" />
+        <img src="../assets/img/dcfl09.png" />
         <p>包子粥铺</p>
       </li>
       <li @click="toBusinessList(10)">
-        <img src="../assets/dcfl10.png" />
+        <img src="../assets/img/dcfl10.png" />
         <p>炸鸡炸串</p>
       </li>
     </ul>
@@ -75,7 +75,7 @@
     <!-- super member -->
     <div class="supermember">
       <div class="left">
-        <img src="../assets/super_member.png" />
+        <img src="../assets/img/super_member.png" />
         <div>
           <h3>超级会员</h3>
           <p>• 每月享超值权益</p>
@@ -102,14 +102,14 @@
     <!-- business list（静态示例） -->
     <ul class="business">
       <li>
-        <img src="../assets/sj01.png" />
+        <img src="../assets/img/sj01.png" />
         <div class="business-info">
           <h3>万家饺子（软件园E18店）</h3>
           <p>￥15起送 | ￥3配送</p>
         </div>
       </li>
       <li>
-        <img src="../assets/sj02.png" />
+        <img src="../assets/img/sj02.png" />
         <div class="business-info">
           <h3>小锅饭豆腐馆（全运店）</h3>
           <p>￥15起送 | ￥3配送</p>
@@ -226,7 +226,7 @@ header {
   width: 95%;
   margin: 2vw auto;
   height: 29vw;
-  background: url("../assets/index_banner.png") no-repeat center/cover;
+  background: url("../assets/img/index_banner.png") no-repeat center/cover;
   padding: 3vw;
 }
 

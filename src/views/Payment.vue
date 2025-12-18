@@ -44,11 +44,11 @@
     <!-- 支付方式部分 -->
     <ul class="payment-type">
       <li>
-        <img src="../assets/alipay.png" />
+        <img src="../assets/img/alipay.png" />
         <i class="fa fa-check-circle"></i>
       </li>
       <li>
-        <img src="../assets/wechat.png" />
+        <img src="../assets/img/wechat.png" />
       </li>
     </ul>
 
