@@ -1,11 +1,3 @@
-// common.js - 全局公共方法
-import axios from 'axios'
-import qs from 'qs'
-
-// 设置axios默认配置
-axios.defaults.baseURL = 'http://localhost:8086/'  // 注意这里要指向本地代理
-axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded'
-
 const common = {
   // 设置sessionStorage
   setSessionStorage(key, value) {
@@ -38,8 +30,8 @@ const common = {
 // 挂载到Vue原型
 export default {
   install(app) {
-    app.config.globalProperties.$axios = axios
-    app.config.globalProperties.$qs = qs
+    // 注意：不要在 common.js 中设置 $axios，已经在 main.js 中设置了
+    // 保留 Storage 相关方法
     app.config.globalProperties.$setSessionStorage = common.setSessionStorage
     app.config.globalProperties.$getSessionStorage = common.getSessionStorage
     app.config.globalProperties.$setLocalStorage = common.setLocalStorage
