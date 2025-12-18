@@ -37,7 +37,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
+import request from '../utils/request'  // 使用自定义的 request
 import Footer from '../components/Footer.vue'
 
 const router = useRouter()
@@ -65,12 +65,11 @@ const login = async () => {
   }
 
   try {
-    const response = await axios.post(
+    const user = await request.post(
       'UserController/getUserByIdByPass',
       { userId: userId.value, password: password.value }
     )
 
-    let user = response.data
     if (!user) {
       alert('用户名或密码不正确！')
     } else {

@@ -2,14 +2,13 @@ import axios from 'axios'
 
 // 创建 axios 实例
 const request = axios.create({
-  baseURL: 'http://localhost:8085/elm_api', // 直接指向后端地址
+  baseURL: 'http://localhost:8085/elm_api',
   timeout: 10000
 })
 
 // 请求拦截器
 request.interceptors.request.use(
   config => {
-    // 自动设置 Content-Type 为 JSON
     if (['post', 'put', 'delete'].includes(config.method)) {
       config.headers['Content-Type'] = 'application/json'
     }
