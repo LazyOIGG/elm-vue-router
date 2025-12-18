@@ -18,13 +18,11 @@ export default defineConfig({
     port: 8086,
     host: 'localhost',
     open: false,
-    // 代理配置 - 将前端请求代理到后端
     proxy: {
-      // 代理所有 Controller 请求到后端
-      '/': {
-        target: 'http://localhost:8085/elm_api',
+      '/api': {
+        target: 'http://localhost:8085',
         changeOrigin: true,
-        // 不需要重写，直接转发请求
+        rewrite: (path) => path.replace(/^\/api/, '')
       }
     }
   }

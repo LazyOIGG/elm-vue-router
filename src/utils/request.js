@@ -2,7 +2,7 @@ import axios from 'axios'
 
 // 创建 axios 实例
 const request = axios.create({
-  baseURL: '', // 使用相对路径，代理会处理
+  baseURL: '/api',  // 添加 /api 前缀
   timeout: 10000
 })
 
