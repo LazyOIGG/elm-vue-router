@@ -1,50 +1,49 @@
-// 获取当前时间（XXXX-XX-XX）
-export function getCurDate() {
-  var now = new Date();
-  var year = now.getFullYear();
-  var month = now.getMonth() + 1;
-  var day = now.getDate();
-  month = month < 10 ? "0" + month : month;
-  day = day < 10 ? "0" + day : day;
-  return year + "-" + month + "-" + day;
-}
+// common.js - 全局公共方法
+import axios from 'axios'
+import qs from 'qs'
 
-// 向 sessionStorage 中存储一个 JSON 对象
-export function setSessionStorage(keyStr, value) {
-  sessionStorage.setItem(keyStr, JSON.stringify(value));
-}
+// 设置axios默认配置
+axios.defaults.baseURL = 'http://localhost:8081/elm/'  // 注意这里要指向本地代理
+axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded'
 
-// 从 sessionStorage 中获取一个 JSON 对象（取不到时返回 null）
-export function getSessionStorage(keyStr) {
-  var str = sessionStorage.getItem(keyStr);
-  if (str == '' || str == null || str == 'null' || str == undefined) {
-    return null;
-  } else {
-    return JSON.parse(str);
+const common = {
+  // 设置sessionStorage
+  setSessionStorage(key, value) {
+    window.sessionStorage.setItem(key, JSON.stringify(value))
+  },
+
+  // 获取sessionStorage
+  getSessionStorage(key) {
+    const value = window.sessionStorage.getItem(key)
+    return value ? JSON.parse(value) : null
+  },
+
+  // 设置localStorage
+  setLocalStorage(key, value) {
+    window.localStorage.setItem(key, JSON.stringify(value))
+  },
+
+  // 获取localStorage
+  getLocalStorage(key) {
+    const value = window.localStorage.getItem(key)
+    return value ? JSON.parse(value) : null
+  },
+
+  // 移除localStorage
+  removeLocalStorage(key) {
+    window.localStorage.removeItem(key)
   }
 }
 
-// 从 sessionStorage 中移除一个 JSON 对象
-export function removeSessionStorage(keyStr) {
-  sessionStorage.removeItem(keyStr);
-}
-
-// 向 localStorage 中存储一个 JSON 对象
-export function setLocalStorage(keyStr, value) {
-  localStorage.setItem(keyStr, JSON.stringify(value));
-}
-
-// 从 localStorage 中获取一个 JSON 对象（取不到时返回 null）
-export function getLocalStorage(keyStr) {
-  var str = localStorage.getItem(keyStr);
-  if (str == '' || str == null || str == 'null' || str == undefined) {
-    return null;
-  } else {
-    return JSON.parse(str);
+// 挂载到Vue原型
+export default {
+  install(app) {
+    app.config.globalProperties.$axios = axios
+    app.config.globalProperties.$qs = qs
+    app.config.globalProperties.$setSessionStorage = common.setSessionStorage
+    app.config.globalProperties.$getSessionStorage = common.getSessionStorage
+    app.config.globalProperties.$setLocalStorage = common.setLocalStorage
+    app.config.globalProperties.$getLocalStorage = common.getLocalStorage
+    app.config.globalProperties.$removeLocalStorage = common.removeLocalStorage
   }
-}
-
-// 从 localStorage 中移除一个 JSON 对象
-export function removeLocalStorage(keyStr) {
-  localStorage.removeItem(keyStr);
 }
