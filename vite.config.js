@@ -3,7 +3,6 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [
     vue(),
@@ -19,10 +18,9 @@ export default defineConfig({
     host: 'localhost',
     open: false,
     proxy: {
-      '/api': {
-        target: 'http://localhost:8085',
+      '/elm_api': {
+        target: 'http://localhost:8085/elm_api',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '')
       }
     }
   }

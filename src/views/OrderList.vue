@@ -65,8 +65,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import axios from 'axios'
-import qs from 'qs'
+import request from '../utils/request'
 import Footer from '../components/Footer.vue'
 
 const orderArr = ref([])
@@ -93,11 +92,11 @@ const fetchOrders = async () => {
   if (!user) return
 
   try {
-    const response = await axios.post(
+    const response = await request.post(
       'OrdersController/listOrdersByUserId',
-      qs.stringify({ userId: user.userId })
+      { userId: user.userId }
     )
-    const result = response.data.map(order => ({
+    const result = response.map(order => ({
       ...order,
       isShowDetailet: false
     }))

@@ -38,7 +38,6 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
-import qs from 'qs'
 import Footer from '../components/Footer.vue'
 
 const router = useRouter()
@@ -68,7 +67,7 @@ const login = async () => {
   try {
     const response = await axios.post(
       'UserController/getUserByIdByPass',
-      qs.stringify({ userId: userId.value, password: password.value })
+      { userId: userId.value, password: password.value }
     )
 
     let user = response.data

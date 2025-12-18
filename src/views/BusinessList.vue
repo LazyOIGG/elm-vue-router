@@ -41,8 +41,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import axios from 'axios'
-import qs from 'qs'
+import request from '../utils/request'
 import Footer from '../components/Footer.vue'
 
 const route = useRoute()
@@ -60,11 +59,11 @@ const getSessionStorage = (key) => {
 // 获取商家列表
 const fetchBusinesses = async () => {
   try {
-    const response = await axios.post(
+    const response = await request.post(
       'BusinessController/listBusinessByOrderTypeId',
-      qs.stringify({ orderTypeId: orderTypeId.value })
+      { orderTypeId: orderTypeId.value }
     )
-    businessArr.value = response.data
+    businessArr.value = response
 
     // 已登录则查询购物车
     const user = getSessionStorage('user')
@@ -79,11 +78,11 @@ const fetchBusinesses = async () => {
 // 查询购物车，统计每个商家的商品数量
 const fetchCart = async (user) => {
   try {
-    const response = await axios.post(
+    const response = await request.post(
       'CartController/listCart',
-      qs.stringify({ userId: user.userId })
+      { userId: user.userId }
     )
-    const cartArr = response.data
+    const cartArr = response
 
     businessArr.value.forEach(businessItem => {
       businessItem.quantity = 0

@@ -72,8 +72,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import axios from 'axios'
-import qs from 'qs'
+import request from '../utils/request'
 import Footer from '../components/Footer.vue'
 
 const route = useRoute()
@@ -120,11 +119,11 @@ const addUserAddress = async () => {
   }
 
   try {
-    const response = await axios.post(
+    const response = await request.post(
       'DeliveryAddressController/saveDeliveryAddress',
-      qs.stringify(addressData)
+      addressData
     )
-    if (response.data > 0) {
+    if (response > 0) {
       router.push({
         path: '/userAddress',
         query: { businessId: businessId.value }

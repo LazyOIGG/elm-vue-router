@@ -2,7 +2,7 @@ import axios from 'axios'
 
 // 创建 axios 实例
 const request = axios.create({
-  baseURL: '/api',  // 添加 /api 前缀
+  baseURL: 'http://localhost:8085/elm_api', // 直接指向后端地址
   timeout: 10000
 })
 

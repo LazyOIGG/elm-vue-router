@@ -53,8 +53,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import axios from 'axios'
-import qs from 'qs'
+import request from '../utils/request'
 import Footer from '../components/Footer.vue'
 
 const route = useRoute()
@@ -93,11 +92,11 @@ const fetchDeliveryAddresses = async () => {
   if (!user) return
 
   try {
-    const response = await axios.post(
+    const response = await request.post(
       'DeliveryAddressController/listDeliveryAddressByUserId',
-      qs.stringify({ userId: user.userId })
+      { userId: user.userId }
     )
-    deliveryAddressArr.value = response.data
+    deliveryAddressArr.value = response
   } catch (error) {
     console.error(error)
   }
@@ -141,12 +140,12 @@ const removeUserAddress = async (daId) => {
   }
 
   try {
-    const response = await axios.post(
+    const response = await request.delete(
       'DeliveryAddressController/removeDeliveryAddress',
-      qs.stringify({ daId })
+      { data: { daId } }
     )
 
-    if (response.data > 0) {
+    if (response > 0) {
       const user = getSessionStorage('user')
       if (user) {
         const deliveryAddress = getLocalStorage(user.userId)

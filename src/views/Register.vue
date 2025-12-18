@@ -53,8 +53,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
-import qs from 'qs'
+import request from '../utils/request'
 import Footer from '../components/Footer.vue'
 
 const router = useRouter()
@@ -72,11 +71,11 @@ const checkUserId = async () => {
   if (!user.value.userId) return
 
   try {
-    const response = await axios.post(
+    const response = await request.post(
       'UserController/getUserById',
-      qs.stringify({ userId: user.value.userId })
+      { userId: user.value.userId }
     )
-    if (response.data == 1) {
+    if (response == 1) {
       user.value.userId = ''
       alert('此手机号码已存在！')
     }
@@ -105,11 +104,11 @@ const register = async () => {
   }
 
   try {
-    const response = await axios.post(
+    const response = await request.post(
       'UserController/saveUser',
-      qs.stringify(user.value)
+      user.value
     )
-    if (response.data > 0) {
+    if (response > 0) {
       alert('注册成功！')
       router.back()
     } else {

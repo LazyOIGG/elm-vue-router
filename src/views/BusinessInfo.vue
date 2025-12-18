@@ -105,8 +105,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import axios from 'axios'
-import qs from 'qs'
+import request from '../utils/request'
 
 const route = useRoute()
 const router = useRouter()
@@ -127,18 +126,18 @@ onMounted(async () => {
 
   try {
     // 获取商家信息
-    const businessRes = await axios.post(
+    const businessRes = await request.post(
       'BusinessController/getBusinessById',
-      qs.stringify({ businessId: businessId.value })
+      { businessId: businessId.value }
     )
-    business.value = businessRes.data
+    business.value = businessRes
 
     // 获取食品信息
-    const foodRes = await axios.post(
+    const foodRes = await request.post(
       'FoodController/listFoodByBusinessId',
-      qs.stringify({ businessId: businessId.value })
+      { businessId: businessId.value }
     )
-    foodArr.value = foodRes.data.map(item => ({ ...item, quantity: 0 }))
+    foodArr.value = foodRes.map(item => ({ ...item, quantity: 0 }))
 
     if (user.value) {
       await listCart()
@@ -150,15 +149,15 @@ onMounted(async () => {
 
 const listCart = async () => {
   try {
-    const response = await axios.post(
+    const response = await request.post(
       'CartController/listCart',
-      qs.stringify({
+      {
         businessId: businessId.value,
         userId: user.value.userId
-      })
+      }
     )
 
-    const cartArr = response.data
+    const cartArr = response
     foodArr.value.forEach(foodItem => {
       foodItem.quantity = 0
       cartArr.forEach(cartItem => {
@@ -200,16 +199,16 @@ const minus = async (index) => {
 
 const saveCart = async (index) => {
   try {
-    const response = await axios.post(
+    const response = await request.post(
       'CartController/saveCart',
-      qs.stringify({
+      {
         businessId: businessId.value,
         userId: user.value.userId,
         foodId: foodArr.value[index].foodId
-      })
+      }
     )
 
-    if (response.data === 1) {
+    if (response === 1) {
       foodArr.value[index].quantity = 1
     } else {
       alert('向购物车中添加食品失败！')
@@ -221,17 +220,17 @@ const saveCart = async (index) => {
 
 const updateCart = async (index, num) => {
   try {
-    const response = await axios.post(
+    const response = await request.put(
       'CartController/updateCart',
-      qs.stringify({
+      {
         businessId: businessId.value,
         userId: user.value.userId,
         foodId: foodArr.value[index].foodId,
         quantity: foodArr.value[index].quantity + num
-      })
+      }
     )
 
-    if (response.data === 1) {
+    if (response === 1) {
       foodArr.value[index].quantity += num
     } else {
       alert('向购物车中更新食品失败！')
@@ -243,16 +242,18 @@ const updateCart = async (index, num) => {
 
 const removeCart = async (index) => {
   try {
-    const response = await axios.post(
+    const response = await request.delete(
       'CartController/removeCart',
-      qs.stringify({
-        businessId: businessId.value,
-        userId: user.value.userId,
-        foodId: foodArr.value[index].foodId
-      })
+      {
+        data: {
+          businessId: businessId.value,
+          userId: user.value.userId,
+          foodId: foodArr.value[index].foodId
+        }
+      }
     )
 
-    if (response.data === 1) {
+    if (response === 1) {
       foodArr.value[index].quantity = 0
     } else {
       alert('从购物车中删除食品失败！')

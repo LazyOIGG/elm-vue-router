@@ -65,8 +65,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import axios from 'axios'
-import qs from 'qs'
+import request from '../utils/request'
 import Footer from '../components/Footer.vue'
 
 const route = useRoute()
@@ -81,11 +80,11 @@ const isShowDetailet = ref(false)
 // 获取订单信息
 const fetchOrder = async () => {
   try {
-    const response = await axios.post(
+    const response = await request.post(
       'OrdersController/getOrdersById',
-      qs.stringify({ orderId: orderId.value })
+      { orderId: orderId.value }
     )
-    orders.value = response.data
+    orders.value = response
   } catch (error) {
     console.error(error)
   }

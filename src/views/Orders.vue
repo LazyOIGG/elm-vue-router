@@ -72,9 +72,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import axios from 'axios'
-import qs from 'qs'
-import { getSessionStorage, getLocalStorage } from '../utils/storage'
+import request from '../utils/request'
+import { getSessionStorage, getLocalStorage } from '../../common.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -91,25 +90,25 @@ onMounted(async () => {
 
   // 查询当前商家
   try {
-    const businessRes = await axios.post(
+    const businessRes = await request.post(
       'BusinessController/getBusinessById',
-      qs.stringify({ businessId: businessId.value })
+      { businessId: businessId.value }
     )
-    business.value = businessRes.data
+    business.value = businessRes
   } catch (error) {
     console.error(error)
   }
 
   // 查询购物车中当前商家的食品
   try {
-    const cartRes = await axios.post(
+    const cartRes = await request.post(
       'CartController/listCart',
-      qs.stringify({
+      {
         userId: user.value.userId,
         businessId: businessId.value
-      })
+      }
     )
-    cartArr.value = cartRes.data
+    cartArr.value = cartRes
   } catch (error) {
     console.error(error)
   }
@@ -140,17 +139,17 @@ const toPayment = async () => {
   }
 
   try {
-    const response = await axios.post(
+    const response = await request.post(
       'OrdersController/createOrders',
-      qs.stringify({
+      {
         userId: user.value.userId,
         businessId: businessId.value,
         daId: deliveryaddress.value.daId,
         orderTotal: totalPrice.value
-      })
+      }
     )
 
-    const orderId = response.data
+    const orderId = response
     if (orderId > 0) {
       router.push({
         path: '/payment',
