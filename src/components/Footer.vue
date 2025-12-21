@@ -1,3 +1,4 @@
+[file name]: Footer.vue
 <template>
   <ul class="footer">
     <li @click="toIndex">
@@ -12,7 +13,7 @@
       <i class="fa fa-file-text-o"></i>
       <p>订单</p>
     </li>
-    <li>
+    <li @click="toProfile">
       <i class="fa fa-user-o"></i>
       <p>我的</p>
     </li>
@@ -30,6 +31,10 @@ const toIndex = () => {
 
 const toOrderList = () => {
   router.push({ path: '/orderList' })
+}
+
+const toProfile = () => {
+  router.push({ path: '/profile' })
 }
 </script>
 
