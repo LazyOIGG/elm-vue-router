@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
-import common from '../common.js'
+import common from './utils/common'
 import request from './utils/request'
 
 import 'font-awesome/css/font-awesome.min.css'

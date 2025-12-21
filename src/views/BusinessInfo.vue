@@ -2,9 +2,6 @@
   <div class="wrapper">
     <!-- header部分 -->
     <header>
-      <div class="header-left" @click="goBack">
-        <i class="fa fa-angle-left"></i>
-      </div>
       <div class="header-title">商家信息</div>
       <div class="header-right"></div>
     </header>
@@ -124,11 +121,6 @@ const business = ref({
 const foodArr = ref([])
 const user = ref({})
 
-// 返回上一页
-const goBack = () => {
-  router.back()
-}
-
 // SessionStorage 方法
 const getSessionStorage = (key) => {
   const item = sessionStorage.getItem(key)
@@ -145,7 +137,6 @@ onMounted(async () => {
   }
 
   try {
-    // 获取商家信息 - 使用正确的请求体格式
     const businessRes = await request.post(
       '/BusinessController/getBusinessById',
       { businessId: businessId.value }
@@ -157,7 +148,6 @@ onMounted(async () => {
       business.value = businessRes
     }
 
-    // 获取食品信息
     const foodRes = await request.post(
       '/FoodController/listFoodByBusinessId',
       { businessId: businessId.value }
@@ -277,7 +267,6 @@ const updateCart = async (index, num) => {
 
 const removeCart = async (index) => {
   try {
-    // 根据后端 Controller，DELETE 请求需要传递请求体
     const response = await request.delete(
       '/CartController/removeCart',
       {
