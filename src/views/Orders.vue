@@ -21,7 +21,7 @@
         <i class="fa fa-angle-right"></i>
       </div>
 
-      <!-- 修改：显示地址中的联系人信息，而不是登录用户信息 -->
+      <!-- 显示地址中的联系人信息 -->
       <p v-if="deliveryAddress">
         {{ deliveryAddress.contactName }}
         {{ sexFilter(deliveryAddress.contactSex) }}
@@ -91,7 +91,7 @@ const business = ref({
 })
 const user = ref({})
 const foodArr = ref([])
-const deliveryAddress = ref(null) // 改为更明确的变量名
+const deliveryAddress = ref(null)
 
 // SessionStorage 方法
 const getSessionStorage = (key) => {
@@ -106,7 +106,6 @@ const getLocalStorage = (key) => {
 }
 
 onMounted(async () => {
-  // 获取用户信息
   user.value = getSessionStorage('user')
 
   if (!user.value || !user.value.userId) {
@@ -115,11 +114,7 @@ onMounted(async () => {
     return
   }
 
-  // 获取地址信息 - 这里应该获取的是用户选择的送货地址
-  // 通常地址信息存储在 localStorage 中，键为 userId + '_address' 或其他约定格式
   deliveryAddress.value = getLocalStorage(`${user.value.userId}_selected_address`)
-
-  // 如果没有选择的地址，尝试从 localStorage 获取默认地址
   if (!deliveryAddress.value) {
     deliveryAddress.value = getLocalStorage(user.value.userId)
   }
@@ -131,7 +126,6 @@ onMounted(async () => {
   }
 
   try {
-    // 查询当前商家信息
     const businessRes = await request.post(
       '/BusinessController/getBusinessById',
       { businessId: businessId.value }
@@ -143,23 +137,19 @@ onMounted(async () => {
       business.value = businessRes
     }
 
-    // 查询商家所有食品
     const foodRes = await request.post(
       '/FoodController/listFoodByBusinessId',
       { businessId: businessId.value }
     )
 
-    // 初始化食品数组
     if (foodRes && foodRes.data) {
       foodArr.value = foodRes.data.map(item => ({ ...item, quantity: 0 }))
     } else {
       foodArr.value = foodRes.map(item => ({ ...item, quantity: 0 }))
     }
 
-    // 查询购物车数据
     await listCart()
   } catch (error) {
-    console.error('加载订单信息失败:', error)
     alert('加载订单信息失败，请稍后重试！')
   }
 })
@@ -177,7 +167,6 @@ const listCart = async () => {
 
     const cartArr = response.data || response
 
-    // 更新食品数量
     foodArr.value.forEach(foodItem => {
       foodItem.quantity = 0
       cartArr.forEach(cartItem => {
@@ -187,12 +176,11 @@ const listCart = async () => {
       })
     })
   } catch (error) {
-    console.error('获取购物车失败:', error)
+    alert('获取购物车失败')
   }
 }
 
 const sexFilter = (value) => {
-  // 假设1: 先生, 2: 女士
   return value === 1 ? '先生' :
          value === 2 ? '女士' : ''
 }
@@ -213,7 +201,7 @@ const toUserAddress = () => {
     query: {
       businessId: businessId.value,
       businessName: business.value.businessName,
-      fromPage: 'orders' // 添加标识，让地址选择页面知道返回后要刷新数据
+      fromPage: 'orders'
     }
   })
 }
@@ -224,7 +212,6 @@ const toPayment = async () => {
     return
   }
 
-  // 检查是否有选择的商品
   const selectedItems = foodArr.value.filter(item => item.quantity > 0)
   if (selectedItems.length === 0) {
     alert('请选择要购买的商品！')
@@ -237,7 +224,7 @@ const toPayment = async () => {
       {
         userId: user.value.userId,
         businessId: businessId.value,
-        daId: deliveryAddress.value.daId, // 使用地址ID
+        daId: deliveryAddress.value.daId,
         orderTotal: totalPrice.value
       }
     )
@@ -254,14 +241,12 @@ const toPayment = async () => {
       alert('创建订单失败！')
     }
   } catch (error) {
-    console.error('创建订单失败:', error)
     alert('创建订单失败，请稍后重试！')
   }
 }
 </script>
 
 <style scoped>
-/* 样式保持不变 */
 /****************** 总容器 ******************/
 .wrapper {
   width: 100%;

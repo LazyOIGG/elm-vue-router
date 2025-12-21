@@ -109,7 +109,7 @@ const fetchOrders = async () => {
     }))
     orderArr.value = result
   } catch (error) {
-    console.error(error)
+    alert('获取订单列表失败')
   }
 }
 
@@ -120,13 +120,9 @@ const toggleDetail = (order) => {
 
 // 跳转到支付页面
 const goToPayment = (orderId) => {
-  console.log('跳转到支付页面，订单ID:', orderId)
-  // 跳转到支付页面，传递订单ID
   router.push({
     path: '/payment',
-    query: {
-      orderId: orderId
-    }
+    query: { orderId }
   })
 }
 

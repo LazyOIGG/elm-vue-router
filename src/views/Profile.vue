@@ -103,7 +103,7 @@ const fetchOrderStats = async () => {
       unpaidOrderCount.value = response.filter(order => order.orderState === 0).length
     }
   } catch (error) {
-    console.error('获取订单统计失败:', error)
+    alert('获取订单统计失败')
   }
 }
 
@@ -137,9 +137,7 @@ const logout = () => {
 }
 
 onMounted(() => {
-  // 检查用户登录状态
   user.value = getSessionStorage('user')
-
   if (user.value) {
     fetchOrderStats()
   }

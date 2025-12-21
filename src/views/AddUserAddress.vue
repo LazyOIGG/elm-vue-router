@@ -132,12 +132,11 @@ const addUserAddress = async () => {
       alert('新增地址失败！')
     }
   } catch (error) {
-    console.error(error)
+    alert('请求失败')
   }
 }
 
 onMounted(() => {
-  // 确保用户已登录
   const user = getSessionStorage('user')
   if (!user) {
     router.push('/login')

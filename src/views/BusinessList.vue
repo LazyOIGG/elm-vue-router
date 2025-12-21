@@ -65,13 +65,12 @@ const fetchBusinesses = async () => {
     )
     businessArr.value = response
 
-    // 已登录则查询购物车
     const user = getSessionStorage('user')
     if (user) {
       await fetchCart(user)
     }
   } catch (error) {
-    console.error(error)
+    alert('获取商家列表失败')
   }
 }
 
@@ -93,7 +92,7 @@ const fetchCart = async (user) => {
       })
     })
   } catch (error) {
-    console.error(error)
+    alert('获取购物车失败')
   }
 }
 

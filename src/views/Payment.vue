@@ -29,10 +29,10 @@
         :key="index"
       >
         <p>
-          {{ item.foodName || item.food?.foodName }} × {{ item.quantity }}
+          {{ item.foodName }} × {{ item.quantity }}
         </p>
         <p>
-          &#165;{{ ((item.foodPrice || item.food?.foodPrice || 0) * item.quantity).toFixed(2) }}
+          &#165;{{ (item.foodPrice * item.quantity).toFixed(2) }}
         </p>
       </li>
 
@@ -72,7 +72,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import request from '../utils/request'
 import Footer from '../components/Footer.vue'
@@ -81,10 +81,7 @@ const route = useRoute()
 const router = useRouter()
 
 const orderId = ref(route.query.orderId)
-const orderData = ref({
-  business: {},
-  orderTotal: 0
-})
+const orderData = ref({})
 const showDetail = ref(false)
 const selectedPayment = ref('alipay')
 const isPaying = ref(false)
@@ -93,32 +90,13 @@ const isPaying = ref(false)
 const orderItems = computed(() => {
   if (!orderData.value) return []
 
-  // 尝试从不同字段获取订单明细
-  const items = orderData.value.list || orderData.value.orderDetailList || []
-  return items.map(item => {
-    if (item.food) {
-      return {
-        foodId: item.food.foodId,
-        foodName: item.food.foodName,
-        foodPrice: item.food.foodPrice,
-        quantity: item.quantity
-      }
-    } else if (item.foodName) {
-      return {
-        foodId: item.foodId,
-        foodName: item.foodName,
-        foodPrice: item.foodPrice,
-        quantity: item.quantity
-      }
-    } else {
-      return {
-        foodId: item.foodId,
-        foodName: '',
-        foodPrice: 0,
-        quantity: item.quantity
-      }
-    }
-  }).filter(item => item.quantity > 0) // 过滤掉数量为0的项
+  const items = orderData.value.list || []
+  return items.map(item => ({
+    foodId: item.food?.foodId || item.foodId,
+    foodName: item.food?.foodName || item.foodName,
+    foodPrice: item.food?.foodPrice || item.foodPrice || 0,
+    quantity: item.quantity || 0
+  })).filter(item => item.quantity > 0)
 })
 
 // 获取订单信息
@@ -130,57 +108,37 @@ const fetchOrder = async () => {
   }
 
   try {
-    console.log('正在获取订单信息，订单ID:', orderId.value)
+    const response = await request.post(
+      '/OrdersController/getOrdersById',
+      { orderId: orderId.value }
+    )
 
-    // 尝试两种方式获取订单信息
-    let response
-    try {
-      // 方式1：使用完整的订单详情接口
-      response = await request.post(
-        '/OrdersController/getOrdersById',
-        { orderId: orderId.value }
-      )
-    } catch (error) {
-      console.log('第一种方式失败，尝试第二种方式...', error)
-      // 方式2：使用简单查询接口
-      response = await request.post(
-        '/OrdersController/getOrdersByIdSimple',
-        null,
-        { params: { orderId: orderId.value } }
-      )
-    }
-
-    // 处理不同的返回数据结构
     if (response && response.data) {
       orderData.value = response.data
-    } else if (response && response.code === 200) {
-      orderData.value = response.data || response.result || response
-    } else {
-      orderData.value = response || {}
+    } else if (response && typeof response === 'object') {
+      orderData.value = response
     }
 
-    console.log('订单数据:', orderData.value)
-
-    // 如果订单信息为空，提示错误
-    if (!orderData.value || Object.keys(orderData.value).length === 0) {
+    if (!orderData.value || !orderData.value.orderId) {
       alert('订单信息不存在或已过期！')
-      router.push({ path: '/OrderList' })
+      router.push({ path: '/orderList' })
+      return
+    }
+
+    if (orderData.value.orderState === 1) {
+      alert('订单已支付！')
+      router.push({ path: '/orderList' })
     }
   } catch (error) {
-    console.error('获取订单信息失败:', error)
-
-    // 检查是否是网络错误
-    if (!error.response) {
-      alert('网络连接失败，请检查服务器是否运行！')
-    } else if (error.response.status === 500) {
-      alert('服务器内部错误，请联系管理员！')
-    } else if (error.response.status === 404) {
-      alert('订单不存在！')
+    if (error.response) {
+      if (error.response.status === 404) {
+        alert('订单不存在！')
+      } else {
+        alert('获取订单信息失败！')
+      }
     } else {
-      alert('获取订单信息失败，请稍后重试！')
+      alert('网络连接失败！')
     }
-
-    // 回退到首页
     router.push({ path: '/index' })
   }
 }
@@ -197,140 +155,64 @@ const selectPayment = (type) => {
 
 // 确认支付
 const confirmPayment = async () => {
-  if (!orderId.value) {
+  if (!orderId.value || !orderData.value.orderId) {
     alert('订单信息错误！')
     return
   }
 
-  // 检查订单状态
   if (orderData.value.orderState === 1) {
     alert('订单已支付！')
     router.push({ path: '/orderList' })
     return
   }
 
-  // 添加确认对话框
-  const confirmPay = confirm(`确定要支付 ¥${(orderData.value.orderTotal || 0).toFixed(2)} 吗？`)
-  if (!confirmPay) {
+  if (!confirm(`确定要支付 ¥${(orderData.value.orderTotal || 0).toFixed(2)} 吗？`)) {
     return
   }
 
   isPaying.value = true
 
   try {
-    console.log('开始支付，订单ID:', orderId.value)
-
-    // 方法1：使用FormData传递参数（确保参数正确传递）
-    const formData = new FormData()
-    formData.append('orderId', orderId.value)
-
-    // 方法2：直接使用URL参数 - 选择一种合适的方式
-    // const response = await request.post(`/OrdersController/payOrders?orderId=${orderId.value}`)
-
-    // 方法3：使用params对象 - 这是最常用的方式
     const response = await request({
       method: 'post',
       url: '/OrdersController/payOrders',
-      params: {
-        orderId: orderId.value
-      },
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      }
+      params: { orderId: orderId.value }
     })
 
-    console.log('支付接口响应:', response)
-
-    // 处理响应
-    let result
-    if (response && response.data !== undefined) {
-      result = response.data
-    } else {
-      result = response
-    }
-
-    console.log('支付结果:', result, '类型:', typeof result)
-
-    // 判断支付是否成功（根据后端返回的格式）
     let success = false
-    if (result === 1 || result === true || result === '1') {
+    let result = response.data !== undefined ? response.data : response
+
+    if (result === 1 || result === true || result === '1' || result === 'success') {
       success = true
     } else if (typeof result === 'object') {
-      // 如果是对象，检查可能的成功字段
-      if (result.success !== undefined) {
-        success = result.success
-      } else if (result.code !== undefined && result.code === 200) {
-        success = true
-      } else if (result.status !== undefined && result.status === 1) {
+      if (result.code === 200 || result.success === true || result.status === 1) {
         success = true
       }
     }
 
     if (success) {
       alert('支付成功！')
-
-      // 更新本地订单状态
       orderData.value.orderState = 1
 
-      // 延迟跳转，让用户看到成功提示
       setTimeout(() => {
-        router.push({
-          path: '/orderList',
-          query: {
-            paymentSuccess: 'true',
-            orderId: orderId.value
-          }
-        })
+        router.push({ path: '/orderList' })
       }, 800)
     } else {
-      alert(`支付失败！返回结果: ${JSON.stringify(result)}`)
+      alert('支付失败！')
       isPaying.value = false
     }
   } catch (error) {
-    console.error('支付失败:', error)
-
-    // 更详细的错误处理
-    let errorMessage = '支付失败，请稍后重试！'
-
-    if (error.response) {
-      console.error('错误响应:', error.response)
-      if (error.response.status === 500) {
-        errorMessage = '服务器内部错误，请联系管理员！'
-      } else if (error.response.status === 400) {
-        errorMessage = '请求参数错误！'
-      } else if (error.response.data) {
-        errorMessage = `支付失败: ${JSON.stringify(error.response.data)}`
-      }
-    } else if (error.request) {
-      console.error('错误请求:', error.request)
-      errorMessage = '网络连接失败，请检查网络设置！'
-    } else {
-      console.error('错误信息:', error.message)
-      errorMessage = `支付失败: ${error.message}`
-    }
-
-    alert(errorMessage)
+    alert('支付失败，请稍后重试！')
     isPaying.value = false
   }
 }
 
-// 处理浏览器返回按钮
-const handlePopState = (event) => {
-  event.preventDefault()
-  history.replaceState({ page: 'payment' }, '', window.location.href)
-  router.push({ path: '/index' })
-}
-
 onMounted(() => {
   fetchOrder()
-
-  const state = { page: 'payment', orderId: orderId.value }
-  history.pushState(state, '', window.location.href)
-  window.addEventListener('popstate', handlePopState)
-})
-
-onUnmounted(() => {
-  window.removeEventListener('popstate', handlePopState)
+  history.pushState({ page: 'payment' }, '', window.location.href)
+  window.addEventListener('popstate', () => {
+    router.push({ path: '/index' })
+  })
 })
 </script>
 
@@ -380,11 +262,6 @@ onUnmounted(() => {
   background-color: #fff;
   border-bottom: 1px solid #eee;
   cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.wrapper .order-info:active {
-  background-color: #f9f9f9;
 }
 
 .wrapper .order-info p:first-child {
@@ -417,18 +294,6 @@ onUnmounted(() => {
   margin: 0;
   background-color: #fff;
   border-bottom: 1px solid #eee;
-  animation: slideDown 0.3s ease;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .wrapper .order-detail li {
@@ -481,11 +346,6 @@ onUnmounted(() => {
   align-items: center;
   border-bottom: 1px solid #eee;
   cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.wrapper .payment-type li:active {
-  background-color: #f9f9f9;
 }
 
 .wrapper .payment-type li.selected {
@@ -522,22 +382,11 @@ onUnmounted(() => {
   font-size: 4.5vw;
   font-weight: bold;
   cursor: pointer;
-  transition: all 0.2s;
-}
-
-.wrapper .payment-button button:hover {
-  background-color: #32b867;
-}
-
-.wrapper .payment-button button:active {
-  background-color: #2da85c;
-  transform: scale(0.98);
 }
 
 .wrapper .payment-button button:disabled {
   background-color: #ccc;
   cursor: not-allowed;
-  transform: none;
 }
 
 /* 响应式调整 */

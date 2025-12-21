@@ -80,7 +80,7 @@ const checkUserId = async () => {
       alert('此手机号码已存在！')
     }
   } catch (error) {
-    console.error(error)
+    alert('检查用户ID失败')
   }
 }
 
@@ -115,7 +115,7 @@ const register = async () => {
       alert('注册失败！')
     }
   } catch (error) {
-    console.error(error)
+    alert('注册失败')
   }
 }
 </script>
@@ -191,24 +191,6 @@ const register = async () => {
   background-color: #38CA73;
   border-radius: 4px;
   border: none;
-  outline: none;
-}
-
-.wrapper .button-register {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 4vw 3vw 0 3vw;
-}
-
-.wrapper .button-register button {
-  width: 100%;
-  height: 10vw;
-  font-size: 3.8vw;
-  font-weight: 700;
-  color: #666;
-  background-color: #EEE;
-  border-radius: 4px;
-  border: solid 1px #DDD;
   outline: none;
 }
 </style>

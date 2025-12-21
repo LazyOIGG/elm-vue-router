@@ -157,12 +157,10 @@ const handleScroll = () => {
 }
 
 onMounted(() => {
-  // 添加滚动监听
   window.addEventListener('scroll', handleScroll)
 })
 
 onUnmounted(() => {
-  // 移除滚动监听
   window.removeEventListener('scroll', handleScroll)
 })
 </script>

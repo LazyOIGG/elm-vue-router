@@ -163,7 +163,6 @@ onMounted(async () => {
       await listCart()
     }
   } catch (error) {
-    console.error('加载商家信息失败:', error)
     alert('加载商家信息失败，请稍后重试！')
   }
 })
@@ -188,7 +187,7 @@ const listCart = async () => {
       })
     })
   } catch (error) {
-    console.error('获取购物车失败:', error)
+    alert('获取购物车失败')
   }
 }
 
@@ -236,7 +235,6 @@ const saveCart = async (index) => {
       alert('向购物车中添加食品失败！')
     }
   } catch (error) {
-    console.error('添加购物车失败:', error)
     alert('网络错误，请稍后重试！')
   }
 }
@@ -260,7 +258,6 @@ const updateCart = async (index, num) => {
       alert('更新购物车数量失败！')
     }
   } catch (error) {
-    console.error('更新购物车失败:', error)
     alert('网络错误，请稍后重试！')
   }
 }
@@ -285,7 +282,6 @@ const removeCart = async (index) => {
       alert('从购物车中删除食品失败！')
     }
   } catch (error) {
-    console.error('删除购物车失败:', error)
     alert('网络错误，请稍后重试！')
   }
 }
@@ -296,7 +292,6 @@ const toOrder = () => {
     return
   }
 
-  // 检查是否有选择的商品
   const selectedItems = foodArr.value.filter(item => item.quantity > 0)
   if (selectedItems.length === 0) {
     alert('请选择要购买的商品！')
@@ -442,7 +437,7 @@ const totalSettle = computed(() => {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: 16vw; /* 为底部购物车留出空间 */
+  padding-bottom: 16vw;
 }
 
 /****************** 食品列表部分 ******************/
@@ -473,7 +468,7 @@ const totalSettle = computed(() => {
   display: flex;
   align-items: flex-start;
   flex: 1;
-  min-width: 0; /* 防止内容溢出 */
+  min-width: 0;
 }
 
 .wrapper .food li .food-left img {
@@ -658,14 +653,6 @@ const totalSettle = computed(() => {
 
 .wrapper .cart .cart-right-item:not([style*="background-color:#535356"]):active {
   background-color: #2678c5;
-}
-
-/* 空列表提示 */
-.wrapper .empty-tip {
-  text-align: center;
-  padding: 10vw;
-  color: #999;
-  font-size: 4vw;
 }
 
 /* 滚动条样式 */

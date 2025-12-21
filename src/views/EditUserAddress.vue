@@ -97,7 +97,7 @@ const fetchDeliveryAddress = async () => {
     )
     deliveryAddress.value = response
   } catch (error) {
-    console.error(error)
+    alert('获取地址详情失败')
   }
 }
 
@@ -130,7 +130,7 @@ const editUserAddress = async () => {
       alert('更新地址失败！')
     }
   } catch (error) {
-    console.error(error)
+    alert('更新地址失败')
   }
 }
 

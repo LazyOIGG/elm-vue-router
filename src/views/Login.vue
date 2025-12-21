@@ -74,13 +74,11 @@ const login = async () => {
     if (!user) {
       alert('用户名或密码不正确！')
     } else {
-      // sessionstorage有容量限制，为防止数据溢出，不存储userImg
       user.userImg = ''
       setSessionStorage('user', user)
       router.back()
     }
   } catch (error) {
-    console.error(error)
     alert('登录失败，请重试')
   }
 }
@@ -91,7 +89,6 @@ const register = () => {
 </script>
 
 <style scoped>
-/* 样式保持不变 */
 /****************** 总容器 ******************/
 .wrapper {
   width: 100%;

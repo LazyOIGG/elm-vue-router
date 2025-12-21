@@ -98,7 +98,7 @@ const fetchDeliveryAddresses = async () => {
     )
     deliveryAddressArr.value = response
   } catch (error) {
-    console.error(error)
+    alert('获取地址列表失败')
   }
 }
 
@@ -158,7 +158,7 @@ const removeUserAddress = async (daId) => {
       alert('删除地址失败！')
     }
   } catch (error) {
-    console.error(error)
+    alert('删除地址失败')
   }
 }
 
