@@ -16,7 +16,12 @@
           </p>
           <div class="order-info-right">
             <p>&#165;{{ item.orderTotal }}</p>
-            <div class="order-info-right-icon">去支付</div>
+            <div
+              class="order-info-right-icon"
+              @click="goToPayment(item.orderId)"
+            >
+              去支付
+            </div>
           </div>
         </div>
         <ul class="order-detailet" v-show="item.isShowDetailet">
@@ -65,9 +70,11 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import request from '../utils/request'
 import Footer from '../components/Footer.vue'
 
+const router = useRouter()
 const orderArr = ref([])
 
 // SessionStorage 方法
@@ -109,6 +116,18 @@ const fetchOrders = async () => {
 // 切换订单明细显示
 const toggleDetail = (order) => {
   order.isShowDetailet = !order.isShowDetailet
+}
+
+// 跳转到支付页面
+const goToPayment = (orderId) => {
+  console.log('跳转到支付页面，订单ID:', orderId)
+  // 跳转到支付页面，传递订单ID
+  router.push({
+    path: '/payment',
+    query: {
+      orderId: orderId
+    }
+  })
 }
 
 onMounted(() => {
@@ -169,6 +188,7 @@ onMounted(() => {
 
 .wrapper .order li .order-info .order-info-right {
   display: flex;
+  align-items: center;
 }
 
 .wrapper .order li .order-info .order-info-right .order-info-right-icon {
@@ -176,8 +196,15 @@ onMounted(() => {
   color: #fff;
   border-radius: 3px;
   margin-left: 2vw;
+  padding: 1vw 2vw;
+  font-size: 3.5vw;
   user-select: none;
   cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.wrapper .order li .order-info .order-info-right .order-info-right-icon:hover {
+  background-color: #e68900;
 }
 
 .wrapper .order li .order-detailet {
