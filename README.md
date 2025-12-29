@@ -1,222 +1,283 @@
-# 🍱 饿了么 SpringBoot + Vue 前后端分离项目
+# 饿了么外卖系统 - 前端项目
 
-一个基于 SpringBoot 和 Vue 开发的前后端分离外卖点餐系统，模拟饿了么核心业务流程。
+## 🚀 项目概述
 
-![Vue](https://img.shields.io/badge/Vue-3.2-green)
-![SpringBoot](https://img.shields.io/badge/SpringBoot-2.7-blue)
-![MySQL](https://img.shields.io/badge/MySQL-5.7-orange)
-![License](https://img.shields.io/badge/License-MIT-yellow)
-
-## 📖 项目简介
-
-本项目是一个完整的在线外卖点餐系统，实现了从商家浏览、食品选择、购物车管理、订单确认到在线支付的全流程功能。采用前后端分离架构，前端使用 Vue 3 + Vue Router + Axios，后端使用 SpringBoot + MyBatis，提供 RESTful API 接口。
-
-## ✨ 功能特性
-
-### 🏪 用户端功能
-
-- ✅ **用户注册/登录** - 手机号注册，密码登录
-- ✅ **首页浏览** - 商家分类展示，推荐商家
-- ✅ **商家列表** - 按分类筛选商家，显示购物车状态
-- ✅ **商家详情** - 查看商家信息，添加食品到购物车
-- ✅ **购物车管理** - 实时计算总价，显示起送条件
-- ✅ **地址管理** - 新增、编辑、删除送货地址
-- ✅ **订单流程** - 确认订单、选择地址、在线支付
-- ✅ **订单历史** - 查看已支付/未支付订单
-- ✅ **个人中心** - 查看个人信息，订单统计
-
-### 🛒 购物流程
-
-```txt
-首页 → 选择分类 → 商家列表 → 商家详情 → 添加食品 → 
-购物车结算 → 确认订单 → 选择地址 → 在线支付 → 完成
-```
-
-## 🏗️ 技术栈
-
-### 前端技术栈
-
-- **Vue 3** - Composition API + `<script setup>`
-- **Vue Router** - 路由管理
-- **Axios** - HTTP 请求库
-- **Font Awesome** - 图标库
-- **原生 CSS** - 移动端适配样式
-- **SessionStorage/LocalStorage** - 本地存储
-
-### 后端技术栈
-
-- **SpringBoot 2.7+** - 后端框架
-- **MyBatis** - ORM 框架
-- **MySQL 5.7+** - 数据库
-- **Maven** - 依赖管理
-- **Tomcat 8.5+** - 应用服务器
+这是一个基于 Vue 3 + Element Plus 构建的移动端外卖系统前端应用，模拟饿了么核心功能，包括商家浏览、购物车管理、订单处理、用户登录注册等完整业务流程。
 
 ## 📁 项目结构
 
 ```txt
-elm-vue-client/
-├── public/
-├── src/
-│   ├── assets/          # 静态资源
-│   │   └── img/        # 图片资源
-│   ├── components/      # 公共组件
-│   │   └── Footer.vue  # 底部导航栏
-│   ├── views/          # 页面组件
-│   │   ├── Index.vue           # 首页
-│   │   ├── BusinessList.vue    # 商家列表
-│   │   ├── BusinessInfo.vue    # 商家详情
-│   │   ├── Orders.vue          # 确认订单
-│   │   ├── Payment.vue         # 在线支付
-│   │   ├── UserAddress.vue     # 地址管理
-│   │   ├── AddUserAddress.vue  # 新增地址
-│   │   ├── EditUserAddress.vue # 编辑地址
-│   │   ├── Login.vue           # 登录
-│   │   ├── Register.vue        # 注册
-│   │   ├── OrderList.vue       # 订单历史
-│   │   └── Profile.vue         # 个人中心
-│   ├── utils/          # 工具类
-│   │   ├── request.js  # Axios 配置
-│   │   └── common.js   # 存储工具
-│   ├── router/         # 路由配置
-│   ├── App.vue         # 根组件
-│   └── main.js         # 入口文件
-└── ...配置文件
+src/
+├── components/          # 通用组件
+│   └── Footer.vue      # 底部导航栏
+├── views/              # 页面组件
+│   ├── Index.vue       # 首页
+│   ├── Discover.vue    # 发现页面
+│   ├── BusinessList.vue # 商家列表
+│   ├── BusinessInfo.vue # 商家详情
+│   ├── Login.vue       # 登录页
+│   ├── Register.vue    # 注册页
+│   ├── Orders.vue      # 订单确认页
+│   ├── Payment.vue     # 支付页
+│   ├── OrderList.vue   # 订单列表
+│   ├── UserAddress.vue # 地址管理
+│   ├── AddUserAddress.vue # 添加地址
+│   ├── EditUserAddress.vue # 编辑地址
+│   └── Profile.vue     # 个人中心
+├── router/             # 路由配置
+│   └── index.js        # 路由定义
+├── utils/              # 工具函数
+│   ├── common.js       # 本地存储工具
+│   └── request.js      # HTTP请求封装
+├── App.vue             # 根组件
+└── main.js             # 应用入口
 ```
 
-## 🗄️ 数据库设计
+## 🔗 核心模块关系
 
-系统包含 7 张核心表：
+### 1. **路由系统 (router/index.js)**
 
-- `user` - 用户表
-- `business` - 商家表
-- `food` - 食品表
-- `cart` - 购物车表
-- `deliveryaddress` - 送货地址表
-- `orders` - 订单表
-- `orderdetailed` - 订单明细表
+- 定义了所有页面的路由映射
+- 采用懒加载优化性能
+- 路由守卫实现页面跳转控制
 
+### 2. **状态管理 (SessionStorage/LocalStorage)**
 
-## 🚀 快速开始
+- **SessionStorage**: 存储用户登录状态、临时数据
+- **LocalStorage**: 存储用户偏好设置、地址信息
+- **工具封装**: 在 `common.js` 中统一管理存储操作
 
-### 环境要求
+### 3. **HTTP请求层 (request.js)**
 
-- Node.js 16+
-- Vue CLI 5+
-- JDK 8+
-- MySQL 5.7+
-- Maven 3.6+
+- 基于 axios 封装的统一请求实例
+- 请求/响应拦截器处理统一逻辑
+- 错误处理和状态码管理
 
-### 前端启动
+### 4. **UI组件库 (Element Plus)**
+
+- 统一使用 Element Plus 组件
+- 图标库来自 `@element-plus/icons-vue`
+- 响应式设计适配移动端
+
+### 5. **核心业务流**
+
+```txt
+用户浏览流程：
+首页(Index) → 商家列表(BusinessList) → 商家详情(BusinessInfo)
+
+下单流程：
+商品加购 → 订单确认(Orders) → 地址选择(UserAddress) → 支付(Payment) → 订单查看(OrderList)
+
+用户流程：
+登录/注册 → 个人中心(Profile) → 地址管理 → 订单管理
+```
+
+## 💡 代码重点解析
+
+### 1. **响应式设计**
+
+- 使用 `vw` 单位实现移动端适配
+- 媒体查询和弹性布局
+- Element Plus 的响应式组件
+
+### 2. **状态持久化**
+
+```javascript
+// 存储用户信息
+sessionStorage.setItem('user', JSON.stringify(user))
+
+// 获取用户信息
+const user = JSON.parse(sessionStorage.getItem('user'))
+```
+
+### 3. **API 调用规范**
+
+```javascript
+// 使用封装的 request 实例
+import request from '../utils/request'
+
+// 统一调用方式
+const response = await request.post('/api/endpoint', data)
+```
+
+### 4. **路由跳转逻辑**
+
+```javascript
+// 带参数跳转
+router.push({
+  path: '/businessInfo',
+  query: { businessId: id }
+})
+
+// 返回上一页
+router.back()
+```
+
+### 5. **购物车管理**
+
+- 实时计算商品总数和总价
+- 本地缓存购物车状态
+- 与后端同步购物车数据
+
+### 6. **表单验证**
+
+- Element Plus 表单组件内置验证
+- 自定义验证规则
+- 前后端双重验证
+
+## 🛠️ 技术栈
+
+- **框架**: Vue 3 + Composition API
+- **UI 库**: Element Plus
+- **路由**: Vue Router 4
+- **HTTP 客户端**: Axios
+- **CSS 工具**: UnoCSS
+- **图标**: Element Plus Icons
+- **构建工具**: Vite
+
+## 📱 功能特性
+
+### ✅ 已实现功能
+
+- 用户注册登录
+- 商家浏览与搜索
+- 购物车管理
+- 订单创建与支付
+- 地址管理
+- 订单历史查看
+- 响应式移动端设计
+
+### 🔧 核心组件
+
+#### Footer.vue
+
+- 底部导航栏组件
+- 路由高亮显示
+- 全局页面跳转
+
+#### 页面组件
+
+- 每个视图对应一个业务功能
+- 统一的头部设计风格
+- 状态驱动的UI更新
+
+## 🔄 数据流
+
+1. **用户认证**
+
+   ```txt
+   登录页 → 验证用户 → 存储session → 全局可用
+   ```
+
+2. **购物车同步**
+
+   ```txt
+   商品操作 → 更新本地状态 → 同步到后端 → 其他页面获取
+   ```
+
+3. **订单流程**
+
+   ```txt
+   选择商品 → 确认订单 → 选择地址 → 支付 → 更新订单状态
+   ```
+
+## 🎨 样式系统
+
+- **Tailwind-like 原子类**: 使用 UnoCSS
+- **响应式断点**: 移动端优先
+- **颜色系统**: 统一的调色板
+- **组件样式**: scoped CSS + 深度选择器
+
+## ⚙️ 配置说明
+
+### 环境配置
+
+```javascript
+// request.js 中的基础配置
+const request = axios.create({
+  baseURL: 'http://localhost:8085/elm_api', // 后端API地址
+  timeout: 10000
+})
+```
+
+### 路由配置
+
+```javascript
+// 路由懒加载
+component: () => import('../views/Index.vue')
+```
+
+## 🚦 开发指南
+
+### 运行项目
 
 ```bash
-# 1. 克隆项目
-git clone <repository-url>
-
-# 2. 进入项目目录
-cd elm-vue-router
-
-# 3. 安装依赖
+# 安装依赖
 npm install
 
-# 4. 配置API地址
-编辑 src/utils/request.js 修改 baseURL
+# 开发模式
+npm run dev
 
-# 5. 启动开发服务器
-npm run serve
-
-# 6. 访问应用
-打开浏览器访问 http://localhost:8086
+# 生产构建
+npm run build
 ```
 
-### 后端启动
+### 添加新页面
 
-（需要配合 SpringBoot 后端项目）
+1. 在 `views/` 目录创建 Vue 组件
+2. 在 `router/index.js` 中注册路由
+3. 按需添加到 `Footer.vue` 导航中
 
-1. 导入数据库脚本 `elm.sql`
-2. 配置数据库连接信息
-3. 启动 SpringBoot 应用（默认端口 8085）
-4. 确保前端请求地址配置正确
+### API 调用规范
 
-## 🔧 配置说明
+1. 始终从 `utils/request` 导入请求实例
+2. 使用 async/await 处理异步
+3. 统一错误处理
 
-### 前端配置
+## 📝 注意事项
 
-- **API 地址**: `src/utils/request.js`
-- **路由配置**: `src/router/index.js`
-- **全局样式**: `src/App.vue`
+1. **存储管理**
+   - SessionStorage 用于会话数据
+   - LocalStorage 用于持久化数据
+   - 注意存储大小限制
 
-### 后端接口
+2. **性能优化**
+   - 路由懒加载
+   - 图片懒加载
+   - 请求节流
 
-项目使用 RESTful 风格接口，主要控制器：
+3. **安全考虑**
+   - 输入验证
+   - XSS 防护
+   - 敏感信息不存储在前端
 
-- `UserController` - 用户相关
-- `BusinessController` - 商家相关
-- `FoodController` - 食品相关
-- `CartController` - 购物车相关
-- `OrdersController` - 订单相关
-- `DeliveryAddressController` - 地址相关
+4. **兼容性**
+   - 现代浏览器支持
+   - 移动端适配
+   - 触摸事件处理
 
-## 📄 API 接口文档
+## 🔗 后端对接
 
-| 模块  | 接口                                                       | 方法     | 说明         |
-|-----|----------------------------------------------------------|--------|------------|
-| 用户  | `/UserController/getUserById`                            | POST   | 检查用户ID是否存在 |
-| 用户  | `/UserController/saveUser`                               | POST   | 用户注册       |
-| 用户  | `/UserController/getUserByIdByPass`                      | POST   | 用户登录       |
-| 商家  | `/BusinessController/listBusinessByOrderTypeId`          | POST   | 按分类获取商家    |
-| 商家  | `/BusinessController/getBusinessById`                    | POST   | 获取商家详情     |
-| 食品  | `/FoodController/listFoodByBusinessId`                   | POST   | 获取商家食品     |
-| 购物车 | `/CartController/listCart`                               | POST   | 获取购物车      |
-| 购物车 | `/CartController/saveCart`                               | POST   | 添加购物车      |
-| 购物车 | `/CartController/updateCart`                             | PUT    | 更新购物车数量    |
-| 购物车 | `/CartController/removeCart`                             | DELETE | 删除购物车项     |
-| 地址  | `/DeliveryAddressController/listDeliveryAddressByUserId` | POST   | 获取用户地址     |
-| 地址  | `/DeliveryAddressController/saveDeliveryAddress`         | POST   | 新增地址       |
-| 地址  | `/DeliveryAddressController/updateDeliveryAddress`       | PUT    | 更新地址       |
-| 地址  | `/DeliveryAddressController/removeDeliveryAddress`       | DELETE | 删除地址       |
-| 订单  | `/OrdersController/createOrders`                         | POST   | 创建订单       |
-| 订单  | `/OrdersController/listOrdersByUserId`                   | POST   | 获取用户订单     |
-| 订单  | `/OrdersController/getOrdersById`                        | POST   | 获取订单详情     |
-| 订单  | `/OrdersController/payOrders`                            | POST   | 支付订单       |
+项目默认对接以下 API 接口：
 
-## 🎯 项目特点
+- 用户相关：`UserController`
+- 商家相关：`BusinessController`
+- 食品相关：`FoodController`
+- 购物车：`CartController`
+- 订单：`OrdersController`
+- 地址：`DeliveryAddressController`
 
-### 技术特点
+## 📊 项目亮点
 
-1. **前后端完全分离** - 通过 RESTful API 通信
-2. **响应式设计** - 使用 vw 单位适配移动端
-3. **状态管理** - 使用本地存储管理用户状态
-4. **模块化组件** - 组件化开发，复用性高
-5. **错误处理** - 统一的请求拦截和错误处理
-
-### 业务特点
-
-1. **完整的购物流程** - 从浏览到支付的完整链路
-2. **实时计算** - 购物车价格实时计算
-3. **地址管理** - 多地址支持，可设置默认
-4. **订单状态** - 清晰区分已支付/未支付订单
-5. **用户友好** - 简洁的UI，清晰的交互提示
+1. **模块化设计**: 清晰的组件分离
+2. **代码复用**: 工具函数和组件高度复用
+3. **错误处理**: 完善的异常处理机制
+4. **用户体验**: 流畅的页面过渡和交互
+5. **代码规范**: 统一的代码风格和命名约定
 
 ## 🐛 常见问题
 
-### Q: 跨域问题如何解决？
-
-A: 后端需要配置 CORS，前端 `request.js` 中已配置跨域支持。
-
-### Q: 图片加载失败怎么办？
-
-A: 确保图片路径正确，或者配置默认图片占位符。
-
-### Q: 登录状态如何保持？
-
-A: 使用 `sessionStorage` 存储用户信息，请求时自动携带。
-
-### Q: 如何修改API地址？
-
-A: 修改 `src/utils/request.js` 中的 `baseURL`。
-
-## 📄 许可证
-
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
-
----
+1. **路由跳转问题**: 检查路由名称和参数传递
+2. **API 调用失败**: 确认后端服务是否运行
+3. **样式不生效**: 检查 UnoCSS 配置和类名使用
+4. **存储数据丢失**: 确认使用正确的存储方式

@@ -474,7 +474,7 @@ onUnmounted(() => {
 /* 横幅背景图 - 添加渐变覆盖 */
 .banner-bg {
   background:
-    linear-gradient(135deg, rgba(255, 107, 107, 0.5) 0%, rgba(255, 142, 83, 0.50) 100%),
+    linear-gradient(135deg, rgba(255, 107, 107, 0.5) 0%, rgba(255, 142, 83, 0.5) 100%),
     url("../assets/img/index_banner.png") no-repeat center / cover;
 }
 
