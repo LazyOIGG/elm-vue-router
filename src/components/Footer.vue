@@ -1,29 +1,47 @@
-[file name]: Footer.vue
 <template>
   <ul class="footer">
-    <li @click="toIndex">
-      <i class="fa fa-home"></i>
-      <p>首页</p>
+    <li @click="toIndex" :class="{ 'active': isActive('/index') }">
+      <el-icon class="footer-icon">
+        <HomeFilled />
+      </el-icon>
+      <span class="footer-text">首页</span>
     </li>
-    <li>
-      <i class="fa fa-compass"></i>
-      <p>发现</p>
+    <li :class="{ 'active': isActive('/discover') }">
+      <el-icon class="footer-icon">
+        <Compass />
+      </el-icon>
+      <span class="footer-text">发现</span>
     </li>
-    <li @click="toOrderList">
-      <i class="fa fa-file-text-o"></i>
-      <p>订单</p>
+    <li @click="toOrderList" :class="{ 'active': isActive('/orderList') }">
+      <el-icon class="footer-icon">
+        <Document />
+      </el-icon>
+      <span class="footer-text">订单</span>
     </li>
-    <li @click="toProfile">
-      <i class="fa fa-user-o"></i>
-      <p>我的</p>
+    <li @click="toProfile" :class="{ 'active': isActive('/profile') }">
+      <el-icon class="footer-icon">
+        <User />
+      </el-icon>
+      <span class="footer-text">我的</span>
     </li>
   </ul>
 </template>
 
 <script setup>
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
+import {
+  HomeFilled,
+  Compass,
+  Document,
+  User
+} from '@element-plus/icons-vue'
 
 const router = useRouter()
+const route = useRoute()
+
+const isActive = (path) => {
+  return route.path === path
+}
 
 const toIndex = () => {
   router.push({ path: '/index' })
@@ -50,6 +68,9 @@ const toProfile = () => {
   display: flex;
   justify-content: space-around;
   align-items: center;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 .footer li {
@@ -60,14 +81,23 @@ const toProfile = () => {
   color: #999;
   user-select: none;
   cursor: pointer;
+  flex: 1;
 }
 
-.footer li p {
-  font-size: 2.8vw;
-  margin: 0;
+.footer li.active {
+  color: #0097ff;
 }
 
-.footer li i {
+.footer li:hover {
+  color: #0097ff;
+}
+
+.footer-icon {
   font-size: 5vw;
+  margin-bottom: 1vw;
+}
+
+.footer-text {
+  font-size: 2.8vw;
 }
 </style>

@@ -1,70 +1,81 @@
 <template>
-  <div class="wrapper">
-    <!-- header部分 -->
-    <header>
+  <div class="w-full h-full bg-gray-100">
+    <!-- 头部 -->
+    <header class="header-primary">
       <p>编辑送货地址</p>
     </header>
 
     <!-- 表单部分 -->
-    <ul class="form-box">
-      <li>
-        <div class="title">联系人：</div>
-        <div class="content">
+    <ul class="w-full mt-12vw bg-white">
+      <li class="flex p-3vw border-b border-gray-200">
+        <div class="w-18vw text-3vw font-bold text-gray-600 pt-1vw">联系人：</div>
+        <div class="flex-1">
           <input
             type="text"
             v-model="deliveryAddress.contactName"
             placeholder="联系人姓名"
+            class="form-input"
           />
         </div>
       </li>
 
-      <li>
-        <div class="title">性别：</div>
-        <div class="content sex-box">
-          <input
-            type="radio"
-            v-model="deliveryAddress.contactSex"
-            :value="1"
-          /> 男
-          <input
-            type="radio"
-            v-model="deliveryAddress.contactSex"
-            :value="0"
-          /> 女
+      <li class="flex p-3vw border-b border-gray-200">
+        <div class="w-18vw text-3vw font-bold text-gray-600 pt-1vw">性别：</div>
+        <div class="flex-1 flex items-center gap-3vw text-3vw">
+          <label class="flex items-center gap-1vw">
+            <input
+              type="radio"
+              v-model="deliveryAddress.contactSex"
+              :value="1"
+              class="w-4vw h-4vw"
+            />
+            男
+          </label>
+          <label class="flex items-center gap-1vw">
+            <input
+              type="radio"
+              v-model="deliveryAddress.contactSex"
+              :value="0"
+              class="w-4vw h-4vw"
+            />
+            女
+          </label>
         </div>
       </li>
 
-      <li>
-        <div class="title">电话：</div>
-        <div class="content">
+      <li class="flex p-3vw border-b border-gray-200">
+        <div class="w-18vw text-3vw font-bold text-gray-600 pt-1vw">电话：</div>
+        <div class="flex-1">
           <input
             type="tel"
             v-model="deliveryAddress.contactTel"
             placeholder="电话"
+            class="form-input"
           />
         </div>
       </li>
 
-      <li>
-        <div class="title">收货地址：</div>
-        <div class="content">
+      <li class="flex p-3vw border-b border-gray-200">
+        <div class="w-18vw text-3vw font-bold text-gray-600 pt-1vw">收货地址：</div>
+        <div class="flex-1">
           <input
             type="text"
             v-model="deliveryAddress.address"
             placeholder="收货地址"
+            class="form-input"
           />
         </div>
       </li>
     </ul>
 
     <!-- 更新按钮 -->
-    <div class="button-add">
-      <button @click="editUserAddress">
+    <div class="p-3vw mt-3vw">
+      <button @click="editUserAddress" class="button-primary">
         更新
       </button>
     </div>
 
-    <!-- 底部菜单部分 -->
+    <!-- 底部菜单 -->
     <Footer />
   </div>
 </template>
@@ -144,84 +155,3 @@ onMounted(() => {
   fetchDeliveryAddress()
 })
 </script>
-
-<style scoped>
-/*************** 总容器 ***************/
-.wrapper {
-  width: 100%;
-  height: 100%;
-}
-
-/*************** header ***************/
-.wrapper header {
-  width: 100%;
-  height: 12vw;
-  background-color: #0097ff;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  color: #fff;
-  font-size: 4.8vw;
-  position: fixed;
-  left: 0;
-  top: 0;
-  z-index: 1000;
-}
-
-/*************** 表单 ***************/
-.wrapper .form-box {
-  width: 100%;
-  margin-top: 12vw;
-}
-
-.wrapper .form-box li {
-  box-sizing: border-box;
-  padding: 4vw 3vw 0;
-  display: flex;
-}
-
-.wrapper .form-box .title {
-  flex: 0 0 18vw;
-  font-size: 3vw;
-  font-weight: 700;
-  color: #666;
-}
-
-.wrapper .form-box .content {
-  flex: 1;
-  display: flex;
-  align-items: center;
-}
-
-.wrapper .form-box .content input {
-  border: none;
-  outline: none;
-  width: 100%;
-  height: 4vw;
-  font-size: 3vw;
-}
-
-.wrapper .form-box .sex-box input {
-  width: 6vw;
-  height: 3.2vw;
-  margin-right: 1vw;
-}
-
-/*************** 按钮 ***************/
-.wrapper .button-add {
-  box-sizing: border-box;
-  padding: 4vw 3vw 0;
-}
-
-.wrapper .button-add button {
-  width: 100%;
-  height: 10vw;
-  font-size: 3.8vw;
-  font-weight: 700;
-  border: none;
-  outline: none;
-  border-radius: 4px;
-  color: #fff;
-  background-color: #38ca73;
-}
-</style>

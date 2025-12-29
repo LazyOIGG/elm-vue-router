@@ -1,103 +1,91 @@
 <template>
-  <div class="wrapper">
-    <!-- header部分 -->
-    <header>
-      <div class="header-title">商家信息</div>
-      <div class="header-right"></div>
+  <div class="w-full h-100vh flex flex-col bg-gray-100">
+    <!-- 头部 -->
+    <header class="header-primary">
+      <div class="flex-1 text-center text-4.8vw font-bold">商家信息</div>
     </header>
 
-    <!-- 商家logo部分 -->
-    <div class="business-logo">
-      <img :src="business.businessImg" />
+    <!-- 商家logo -->
+    <div class="w-full h-35vw bg-white flex-center p-3vw">
+      <img :src="business.businessImg" class="w-40vw h-30vw rounded-1vw object-cover shadow-md" />
     </div>
 
-    <!-- 商家信息部分 -->
-    <div class="business-info">
-      <h1>{{ business.businessName }}</h1>
-      <p>
-        &#165;{{ business.starPrice }}起送
-        &#165;{{ business.deliveryPrice }}配送
+    <!-- 商家信息 -->
+    <div class="w-full p-3vw bg-white border-b border-gray-200 mb-2vw">
+      <h1 class="text-5vw text-gray-800 mb-2vw font-bold text-center">{{ business.businessName }}</h1>
+      <p class="text-3.2vw text-gray-600 text-center mb-1vw">
+        ¥{{ business.starPrice }}起送 ¥{{ business.deliveryPrice }}配送
       </p>
-      <p>{{ business.businessExplain }}</p>
+      <p class="text-3.2vw text-gray-600 text-center">{{ business.businessExplain }}</p>
     </div>
 
-    <!-- 食品列表部分 -->
-    <div class="food-container">
-      <ul class="food">
-        <li v-for="(item, index) in foodArr" :key="item.foodId">
-          <div class="food-left">
-            <img :src="item.foodImg" />
-            <div class="food-left-info">
-              <h3>{{ item.foodName }}</h3>
-              <p>{{ item.foodExplain }}</p>
-              <p>&#165;{{ item.foodPrice }}</p>
+    <!-- 食品列表 -->
+    <div class="flex-1 overflow-y-auto pb-16vw">
+      <ul class="w-full bg-white">
+        <li
+          v-for="(item, index) in foodArr"
+          :key="item.foodId"
+          class="flex p-4vw border-b border-gray-100"
+        >
+          <div class="flex-1 flex">
+            <img :src="item.foodImg" class="w-22vw h-22vw rounded-1vw object-cover mr-3vw" />
+            <div class="flex-1">
+              <h3 class="text-4vw text-gray-800 mb-1.5vw font-bold overflow-hidden text-ellipsis whitespace-nowrap">
+                {{ item.foodName }}
+              </h3>
+              <p class="text-3.2vw text-gray-500 mb-1.5vw line-clamp-2">{{ item.foodExplain }}</p>
+              <p class="text-3.8vw text-orange-500 font-bold">¥{{ item.foodPrice }}</p>
             </div>
           </div>
 
-          <div class="food-right">
-            <div>
-              <i
-                class="fa fa-minus-circle"
-                v-show="item.quantity !== 0"
-                @click="minus(index)"
-              ></i>
+          <div class="flex items-center gap-3vw">
+            <div @click="minus(index)" v-show="item.quantity !== 0">
+              <el-icon class="text-6vw text-red-500 cursor-pointer">
+                <Minus />
+              </el-icon>
             </div>
-            <p>
-              <span v-show="item.quantity !== 0">
-                {{ item.quantity }}
-              </span>
+            <p class="text-4.2vw font-bold text-gray-800 min-w-8vw text-center">
+              <span v-show="item.quantity !== 0">{{ item.quantity }}</span>
             </p>
-            <div>
-              <i
-                class="fa fa-plus-circle"
-                @click="add(index)"
-              ></i>
+            <div @click="add(index)">
+              <el-icon class="text-6vw text-blue-500 cursor-pointer">
+                <Plus />
+              </el-icon>
             </div>
           </div>
         </li>
       </ul>
     </div>
 
-    <!-- 购物车部分 -->
-    <div class="cart">
-      <div class="cart-left">
-        <div
-          class="cart-left-icon"
-          :style="totalQuantity === 0
-            ? 'background-color:#505051;'
-            : 'background-color:#3190E8;'"
-        >
-          <i class="fa fa-shopping-cart"></i>
-          <div
-            class="cart-left-icon-quantity"
-            v-show="totalQuantity !== 0"
-          >
-            {{ totalQuantity }}
+    <!-- 购物车 -->
+    <div class="w-full h-16vw fixed left-0 bottom-0 flex bg-white shadow-lg z-1000">
+      <div class="flex-2 bg-gray-800 flex items-center p-4vw">
+        <div class="relative">
+          <div :class="totalQuantity === 0 ? 'bg-gray-600' : 'bg-blue-500'"
+               class="w-12vw h-12vw rounded-full flex-center">
+            <el-icon class="text-6vw text-white">
+              <ShoppingCart />
+            </el-icon>
+            <div v-show="totalQuantity !== 0"
+                 class="absolute top--1vw right--1vw bg-red-500 text-white text-3vw font-bold w-6vw h-6vw rounded-full flex-center border border-white">
+              {{ totalQuantity }}
+            </div>
           </div>
         </div>
-
-        <div class="cart-left-info">
-          <p>&#165;{{ totalPrice }}</p>
-          <p>另需配送费{{ business.deliveryPrice }}元</p>
+        <div class="ml-3vw text-white">
+          <p class="text-4.8vw font-bold mb-1vw">¥{{ totalPrice }}</p>
+          <p class="text-3vw text-gray-300">另需配送费{{ business.deliveryPrice }}元</p>
         </div>
       </div>
 
-      <div class="cart-right">
-        <!-- 不够起送费 -->
-        <div
-          class="cart-right-item"
-          v-show="totalSettle < business.starPrice"
-          style="background-color:#535356;cursor:default;"
-        >
-          &#165;{{ business.starPrice }}起送
+      <div class="flex-1">
+        <div v-show="totalSettle < business.starPrice"
+             class="w-full h-full bg-gray-600 text-white text-4.5vw font-bold flex-center">
+          ¥{{ business.starPrice }}起送
         </div>
-
-        <!-- 达到起送费 -->
-        <div
-          class="cart-right-item"
-          v-show="totalSettle >= business.starPrice"
-          @click="toOrder"
-        >
+        <div v-show="totalSettle >= business.starPrice"
+             @click="toOrder"
+             class="w-full h-full bg-blue-500 text-white text-4.5vw font-bold flex-center cursor-pointer hover:bg-blue-600">
           去结算
         </div>
       </div>
@@ -109,6 +97,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import request from '../utils/request'
+import { Plus, Minus, ShoppingCart } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -328,348 +317,10 @@ const totalSettle = computed(() => {
 </script>
 
 <style scoped>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-/****************** 总容器 ******************/
-.wrapper {
-  width: 100%;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background-color: #f5f5f5;
-}
-
-/****************** header部分 ******************/
-.wrapper header {
-  width: 100%;
-  height: 12vw;
-  background-color: #0097ff;
-  color: #fff;
-  font-size: 4.8vw;
-  position: sticky;
-  top: 0;
-  left: 0;
-  z-index: 1000;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 4vw;
-  flex-shrink: 0;
-}
-
-.wrapper header .header-left,
-.wrapper header .header-right {
-  width: 10vw;
-  height: 10vw;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-.wrapper header .header-left i {
-  font-size: 6vw;
-  font-weight: bold;
-}
-
-.wrapper header .header-title {
-  flex: 1;
-  text-align: center;
-  font-weight: bold;
-  letter-spacing: 0.5vw;
-}
-
-/****************** 商家logo部分 ******************/
-.wrapper .business-logo {
-  width: 100%;
-  height: 35vw;
-  background-color: #fff;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-shrink: 0;
-  padding: 3vw 0;
-}
-
-.wrapper .business-logo img {
-  width: 40vw;
-  height: 30vw;
-  border-radius: 5px;
-  object-fit: cover;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-/****************** 商家信息部分 ******************/
-.wrapper .business-info {
-  width: 100%;
-  padding: 3vw 4vw;
-  background-color: #fff;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  border-bottom: 1px solid #eee;
-  flex-shrink: 0;
-  margin-bottom: 2vw;
-}
-
-.wrapper .business-info h1 {
-  font-size: 5vw;
-  margin-bottom: 2vw;
-  color: #333;
-  font-weight: bold;
-}
-
-.wrapper .business-info p {
-  font-size: 3.2vw;
-  color: #666;
-  margin-top: 1vw;
-  line-height: 1.4;
-}
-
-/****************** 食品列表容器 ******************/
-.wrapper .food-container {
-  flex: 1;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom: 16vw;
-}
-
-/****************** 食品列表部分 ******************/
-.wrapper .food {
-  width: 100%;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  background-color: #fff;
-}
-
-.wrapper .food li {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 4vw;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #f0f0f0;
-  transition: background-color 0.2s;
-}
-
-.wrapper .food li:active {
-  background-color: #f9f9f9;
-}
-
-.wrapper .food li .food-left {
-  display: flex;
-  align-items: flex-start;
-  flex: 1;
-  min-width: 0;
-}
-
-.wrapper .food li .food-left img {
-  width: 22vw;
-  height: 22vw;
-  border-radius: 4px;
-  object-fit: cover;
-  flex-shrink: 0;
-}
-
-.wrapper .food li .food-left-info {
-  margin-left: 4vw;
-  flex: 1;
-  overflow: hidden;
-}
-
-.wrapper .food li .food-left-info h3 {
-  font-size: 4vw;
-  color: #333;
-  margin-bottom: 1.5vw;
-  font-weight: bold;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.wrapper .food li .food-left-info p {
-  font-size: 3.2vw;
-  color: #888;
-  margin-top: 1.5vw;
-  line-height: 1.3;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
-}
-
-.wrapper .food li .food-left-info p:last-child {
-  color: #ff6000;
-  font-size: 3.8vw;
-  font-weight: bold;
-  margin-top: 2vw;
-}
-
-.wrapper .food li .food-right {
-  display: flex;
-  align-items: center;
-  gap: 3vw;
-  flex-shrink: 0;
-  margin-left: 2vw;
-}
-
-.wrapper .food li .food-right i {
-  font-size: 6vw;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.wrapper .food li .food-right i:active {
-  transform: scale(0.9);
-}
-
-.wrapper .food li .food-right i.fa-plus-circle {
-  color: #3190E8;
-}
-
-.wrapper .food li .food-right i.fa-minus-circle {
-  color: #FF4444;
-}
-
-.wrapper .food li .food-right p {
-  width: 8vw;
-  text-align: center;
-  font-size: 4.2vw;
-  font-weight: bold;
-  color: #333;
-  min-width: 8vw;
-}
-
-/****************** 购物车部分 ******************/
-.wrapper .cart {
-  width: 100%;
-  height: 16vw;
-  position: fixed;
-  left: 0;
-  bottom: 0;
-  display: flex;
-  background-color: #fff;
-  box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-  z-index: 1000;
-  flex-shrink: 0;
-}
-
-.wrapper .cart .cart-left {
-  flex: 2;
-  display: flex;
-  align-items: center;
-  background-color: #3d3d3f;
-  padding: 0 4vw;
-}
-
-.wrapper .cart .cart-left-icon {
-  position: relative;
-  width: 12vw;
-  height: 12vw;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-shrink: 0;
-}
-
-.wrapper .cart .cart-left-icon i {
-  font-size: 6vw;
-  color: #fff;
-}
-
-.wrapper .cart .cart-left-icon-quantity {
-  position: absolute;
-  top: -1vw;
-  right: -1vw;
-  background-color: #FF4444;
-  color: #fff;
-  font-size: 3vw;
-  font-weight: bold;
-  width: 6vw;
-  height: 6vw;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border: 1px solid #fff;
-}
-
-.wrapper .cart .cart-left-info {
-  margin-left: 3vw;
-  color: #fff;
   overflow: hidden;
-}
-
-.wrapper .cart .cart-left-info p:first-child {
-  font-size: 4.8vw;
-  font-weight: bold;
-  margin-bottom: 1vw;
-}
-
-.wrapper .cart .cart-left-info p:last-child {
-  font-size: 3vw;
-  color: #aaa;
-}
-
-.wrapper .cart .cart-right {
-  flex: 1;
-  min-width: 0;
-}
-
-.wrapper .cart .cart-right-item {
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 4.5vw;
-  font-weight: bold;
-  color: #fff;
-  cursor: pointer;
-  padding: 0 2vw;
-  text-align: center;
-  transition: background-color 0.2s;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.wrapper .cart .cart-right-item[style*="background-color:#535356"] {
-  background-color: #535356;
-}
-
-.wrapper .cart .cart-right-item:not([style*="background-color:#535356"]) {
-  background-color: #3190E8;
-}
-
-.wrapper .cart .cart-right-item:not([style*="background-color:#535356"]):active {
-  background-color: #2678c5;
-}
-
-/* 滚动条样式 */
-.food-container::-webkit-scrollbar {
-  width: 3px;
-}
-
-.food-container::-webkit-scrollbar-track {
-  background: #f1f1f1;
-}
-
-.food-container::-webkit-scrollbar-thumb {
-  background: #ccc;
-  border-radius: 3px;
-}
-
-.food-container::-webkit-scrollbar-thumb:hover {
-  background: #aaa;
 }
 </style>
