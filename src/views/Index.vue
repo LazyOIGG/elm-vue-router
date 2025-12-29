@@ -8,7 +8,7 @@
         </el-icon>
       </div>
       <div class="flex items-center text-4.5vw font-bold">
-        沈阳市规划大厦
+        云南大学呈贡校区
         <el-icon class="ml-1vw text-3.5vw">
           <ArrowDown/>
         </el-icon>

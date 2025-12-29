@@ -1,74 +1,153 @@
 <template>
-  <div class="wrapper">
-    <!-- header部分 -->
-    <header>
-      <p>我的信息</p>
+  <div class="w-full h-full bg-gray-100">
+    <!-- 头部 -->
+    <header class="header-primary">
+      <el-button
+          @click="router.back()"
+          type="primary"
+          :icon="ArrowLeft"
+          size="large"
+          circle
+          class="!p-0 !w-8vw !h-8vw !bg-transparent !border-0 !shadow-none hover:!bg-blue-400"
+      />
+      <h1 class="text-4.5vw text-white font-bold">我的信息</h1>
+      <div class="w-8vw"></div>
     </header>
 
-    <!-- 用户信息卡片 -->
-    <div class="profile-card" v-if="user">
-      <div class="avatar-section">
-        <div class="avatar">
-          <i class="fa fa-user-circle"></i>
+    <!-- 用户信息 -->
+    <div class="w-full mt-12vw px-3vw pb-16vw">
+      <!-- 已登录状态 -->
+      <div v-if="user" class="space-y-3vw">
+        <!-- 用户信息卡片 -->
+        <div class="bg-white rounded-2vw shadow-sm p-4vw">
+          <div class="flex items-center mb-4vw">
+            <div
+                class="w-18vw h-18vw bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mr-4vw">
+              <el-icon size="10vw" color="white">
+                <User/>
+              </el-icon>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="text-4.5vw text-gray-800 font-bold truncate">{{ user.userName }}</h3>
+              <p class="text-3.5vw text-gray-600 mt-1vw">
+                {{ user.userId }} {{ sexFilter(user.userSex) }}
+              </p>
+            </div>
+          </div>
+
+          <div class="flex justify-around pt-4vw border-t border-gray-200">
+            <div class="text-center">
+              <p class="text-5vw text-blue-500 font-bold">{{ orderCount || 0 }}</p>
+              <p class="text-3.2vw text-gray-600 mt-1vw">总订单</p>
+            </div>
+            <div class="text-center">
+              <p class="text-5vw text-orange-500 font-bold">{{ unpaidOrderCount || 0 }}</p>
+              <p class="text-3.2vw text-gray-600 mt-1vw">待支付</p>
+            </div>
+          </div>
         </div>
-        <div class="user-info">
-          <h3>{{ user.userName }}</h3>
-          <p>{{ user.userId }} {{ sexFilter(user.userSex) }}</p>
+
+        <!-- 功能菜单 -->
+        <div class="bg-white rounded-2vw shadow-sm overflow-hidden">
+          <div
+              @click="toOrderList"
+              class="flex items-center justify-between p-4vw border-b border-gray-200 cursor-pointer hover:bg-gray-50"
+          >
+            <div class="flex items-center">
+              <el-icon class="text-blue-500 mr-3vw" size="5vw">
+                <Document/>
+              </el-icon>
+              <span class="text-4vw text-gray-800">我的订单</span>
+            </div>
+            <el-icon class="text-gray-400" size="4vw">
+              <ArrowRight/>
+            </el-icon>
+          </div>
+
+          <div
+              @click="toAddressManagement"
+              class="flex items-center justify-between p-4vw border-b border-gray-200 cursor-pointer hover:bg-gray-50"
+          >
+            <div class="flex items-center">
+              <el-icon class="text-green-500 mr-3vw" size="5vw">
+                <Location/>
+              </el-icon>
+              <span class="text-4vw text-gray-800">地址管理</span>
+            </div>
+            <el-icon class="text-gray-400" size="4vw">
+              <ArrowRight/>
+            </el-icon>
+          </div>
+
+          <div
+              @click="logout"
+              class="flex items-center justify-between p-4vw cursor-pointer hover:bg-gray-50"
+          >
+            <div class="flex items-center">
+              <el-icon class="text-red-500 mr-3vw" size="5vw">
+                <SwitchButton/>
+              </el-icon>
+              <span class="text-4vw text-gray-800">退出登录</span>
+            </div>
+            <el-icon class="text-gray-400" size="4vw">
+              <ArrowRight/>
+            </el-icon>
+          </div>
         </div>
       </div>
 
-      <div class="stats">
-        <div class="stat-item">
-          <span class="stat-number">{{ orderCount || 0 }}</span>
-          <span class="stat-label">总订单</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-number">{{ unpaidOrderCount || 0 }}</span>
-          <span class="stat-label">待支付</span>
+      <!-- 未登录状态 -->
+      <div v-else class="mt-10vw">
+        <div class="bg-white rounded-2vw shadow-sm p-6vw text-center">
+          <div class="w-25vw h-25vw bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4vw">
+            <el-icon size="15vw" color="#909399">
+              <User/>
+            </el-icon>
+          </div>
+          <h3 class="text-4.5vw text-gray-800 font-bold mb-2vw">请登录</h3>
+          <p class="text-3.5vw text-gray-600 mb-6vw">登录后查看个人信息和订单</p>
+          <div class="flex justify-center">
+            <el-button
+                @click="toLogin"
+                type="primary"
+                size="large"
+                class="w-full !h-12vw !text-4.5vw !font-bold !rounded-3vw !mb-4vw"
+            >
+              登录
+            </el-button>
+          </div>
+          <div class="flex justify-center mt-4vw">
+            <el-button
+                @click="toRegister"
+                type="primary"
+                plain
+                size="large"
+                class="w-full !h-12vw !text-4.5vw !font-bold !rounded-3vw !border-gray-300"
+            >
+              去注册
+            </el-button>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- 功能列表 -->
-    <ul class="menu-list" v-if="user">
-      <li @click="toOrderList">
-        <i class="fa fa-file-text-o"></i>
-        <span>我的订单</span>
-        <i class="fa fa-angle-right"></i>
-      </li>
-      <li @click="toAddressManagement">
-        <i class="fa fa-map-marker"></i>
-        <span>地址管理</span>
-        <i class="fa fa-angle-right"></i>
-      </li>
-      <li @click="logout">
-        <i class="fa fa-sign-out"></i>
-        <span>退出登录</span>
-        <i class="fa fa-angle-right"></i>
-      </li>
-    </ul>
-
-    <!-- 未登录状态 -->
-    <div class="login-prompt" v-else>
-      <div class="prompt-content">
-        <i class="fa fa-user-circle"></i>
-        <h3>请登录</h3>
-        <p>登录后查看个人信息和订单</p>
-        <div class="button-group">
-          <button class="login-btn" @click="toLogin">立即登录</button>
-          <button class="register-btn" @click="toRegister">注册账号</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 底部菜单部分 -->
-    <Footer />
+    <!-- 底部菜单 -->
+    <Footer/>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import {ref, onMounted} from 'vue'
+import {useRouter} from 'vue-router'
+import {ElMessage, ElMessageBox} from 'element-plus'
+import {
+  ArrowLeft,
+  User,
+  Document,
+  Location,
+  ArrowRight,
+  SwitchButton
+} from '@element-plus/icons-vue'
 import request from '../utils/request'
 import Footer from '../components/Footer.vue'
 
@@ -94,8 +173,8 @@ const fetchOrderStats = async () => {
 
   try {
     const response = await request.post(
-      'OrdersController/listOrdersByUserId',
-      { userId: user.value.userId }
+        'OrdersController/listOrdersByUserId',
+        {userId: user.value.userId}
     )
 
     if (response && Array.isArray(response)) {
@@ -103,36 +182,55 @@ const fetchOrderStats = async () => {
       unpaidOrderCount.value = response.filter(order => order.orderState === 0).length
     }
   } catch (error) {
-    alert('获取订单统计失败')
+    ElMessage.error('获取订单统计失败')
   }
 }
 
 // 跳转订单列表
 const toOrderList = () => {
-  router.push({ path: '/orderList' })
+  router.push({path: '/orderList'})
 }
 
 // 跳转地址管理
 const toAddressManagement = () => {
-  router.push({ path: '/userAddress' })
+  router.push({path: '/userAddress'})
 }
 
 // 跳转登录页
 const toLogin = () => {
-  router.push({ path: '/login' })
+  router.push({
+    path: '/login',
+    query: {redirect: '/profile'}
+  })
 }
 
 // 跳转注册页
 const toRegister = () => {
-  router.push({ path: '/register' })
+  router.push({
+    path: '/register',
+    query: {redirect: '/profile'}
+  })
 }
 
 // 退出登录
-const logout = () => {
-  if (confirm('确定要退出登录吗？')) {
+const logout = async () => {
+  try {
+    await ElMessageBox.confirm(
+        '确定要退出登录吗？',
+        '退出登录',
+        {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning',
+        }
+    )
+
     sessionStorage.removeItem('user')
     user.value = null
-    router.push({ path: '/index' })
+    ElMessage.success('已退出登录')
+    router.push({path: '/index'})
+  } catch (error) {
+    // 用户取消退出
   }
 }
 
@@ -145,183 +243,8 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/*************** 总容器 ***************/
-.wrapper {
-  width: 100%;
-  height: 100%;
-  background-color: #f5f5f5;
-}
-
-/*************** header ***************/
-.wrapper header {
-  width: 100%;
-  height: 12vw;
-  background-color: #0097ff;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: #fff;
-  font-size: 4.8vw;
-  position: fixed;
-  left: 0;
-  top: 0;
-  z-index: 1000;
-}
-
-/*************** 个人信息卡片 ***************/
-.wrapper .profile-card {
-  margin-top: 12vw;
-  background-color: #fff;
-  padding: 4vw;
-  border-bottom: 1px solid #eee;
-}
-
-.wrapper .profile-card .avatar-section {
-  display: flex;
-  align-items: center;
-  margin-bottom: 4vw;
-}
-
-.wrapper .profile-card .avatar {
-  width: 18vw;
-  height: 18vw;
-  border-radius: 50%;
-  background-color: #0097ff;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-right: 4vw;
-}
-
-.wrapper .profile-card .avatar i {
-  font-size: 12vw;
-  color: #fff;
-}
-
-.wrapper .profile-card .user-info h3 {
-  font-size: 5vw;
-  color: #333;
-  margin-bottom: 1vw;
-}
-
-.wrapper .profile-card .user-info p {
-  font-size: 3.5vw;
-  color: #666;
-}
-
-.wrapper .profile-card .stats {
-  display: flex;
-  justify-content: space-around;
-  border-top: 1px solid #eee;
-  padding-top: 4vw;
-}
-
-.wrapper .profile-card .stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.wrapper .profile-card .stat-number {
-  font-size: 5vw;
-  font-weight: bold;
-  color: #0097ff;
-  margin-bottom: 1vw;
-}
-
-.wrapper .profile-card .stat-label {
-  font-size: 3.2vw;
-  color: #666;
-}
-
-/*************** 功能菜单列表 ***************/
-.wrapper .menu-list {
-  margin-top: 4vw;
-  background-color: #fff;
-}
-
-.wrapper .menu-list li {
-  display: flex;
-  align-items: center;
-  padding: 4vw;
-  border-bottom: 1px solid #eee;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.wrapper .menu-list li:active {
-  background-color: #f9f9f9;
-}
-
-.wrapper .menu-list li i:first-child {
-  font-size: 5vw;
-  color: #0097ff;
-  width: 8vw;
-  text-align: center;
-  margin-right: 3vw;
-}
-
-.wrapper .menu-list li span {
-  flex: 1;
-  font-size: 4vw;
-  color: #333;
-}
-
-.wrapper .menu-list li i:last-child {
-  font-size: 5vw;
-  color: #999;
-}
-
-/*************** 未登录提示 ***************/
-.wrapper .login-prompt {
-  margin-top: 12vw;
-  background-color: #fff;
-  padding: 8vw 4vw;
-  text-align: center;
-}
-
-.wrapper .login-prompt .prompt-content i {
-  font-size: 20vw;
-  color: #ccc;
-  margin-bottom: 4vw;
-}
-
-.wrapper .login-prompt .prompt-content h3 {
-  font-size: 5vw;
-  color: #333;
-  margin-bottom: 2vw;
-}
-
-.wrapper .login-prompt .prompt-content p {
-  font-size: 3.8vw;
-  color: #666;
-  margin-bottom: 6vw;
-}
-
-.wrapper .login-prompt .button-group {
-  display: flex;
-  gap: 4vw;
-  justify-content: center;
-}
-
-.wrapper .login-prompt .login-btn,
-.wrapper .login-prompt .register-btn {
-  padding: 3vw 6vw;
-  border: none;
-  border-radius: 6px;
-  font-size: 4vw;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.wrapper .login-prompt .login-btn {
-  background-color: #0097ff;
-  color: #fff;
-}
-
-.wrapper .login-prompt .register-btn {
-  background-color: #f0f0f0;
-  color: #666;
-  border: 1px solid #ddd;
+.header-primary {
+  @apply w-full h-12vw bg-gradient-to-r from-blue-500 to-blue-600
+  flex items-center justify-between px-4vw fixed top-0 left-0 z-1000 shadow-md;
 }
 </style>

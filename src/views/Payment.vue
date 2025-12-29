@@ -1,81 +1,134 @@
 <template>
-  <div class="wrapper">
-    <!-- header部分 -->
-    <header>
-      <p>在线支付</p>
+  <div class="w-full h-full bg-gray-100">
+    <!-- 头部 -->
+    <header class="header-primary">
+      <el-button
+        @click="router.back()"
+        type="primary"
+        :icon="ArrowLeft"
+        size="large"
+        circle
+        class="!p-0 !w-8vw !h-8vw !bg-transparent !border-0 !shadow-none hover:!bg-blue-400"
+      />
+      <h1 class="text-4.5vw text-white font-bold">在线支付</h1>
+      <div class="w-8vw"></div>
     </header>
 
-    <!-- 订单信息部分 -->
-    <h3>订单信息：</h3>
-    <div class="order-info">
-      <p>
-        {{ orderData.business?.businessName || '加载中...' }}
-        <i
-          class="fa fa-caret-down"
+    <!-- 订单内容 -->
+    <div class="w-full mt-12vw px-3vw pb-16vw">
+      <!-- 订单信息 -->
+      <div class="bg-white rounded-2vw shadow-sm overflow-hidden mb-3vw">
+        <div
           @click="toggleDetail"
-          :class="{ 'rotated': showDetail }"
-        ></i>
-      </p>
-      <p>&#165;{{ (orderData.orderTotal || 0).toFixed(2) }}</p>
+          class="p-3vw border-b border-gray-200 cursor-pointer flex justify-between items-center"
+        >
+          <div class="flex items-center">
+            <el-icon class="text-blue-500 mr-2vw"><Document /></el-icon>
+            <span class="text-4vw font-bold text-gray-800 truncate">{{ orderData.business?.businessName || '加载中...' }}</span>
+          </div>
+          <div class="flex items-center">
+            <span class="text-4.5vw text-orange-500 font-bold mr-2vw">¥{{ (orderData.orderTotal || 0).toFixed(2) }}</span>
+            <el-icon :class="{ 'rotate-180': showDetail }" class="text-gray-500">
+              <ArrowDown />
+            </el-icon>
+          </div>
+        </div>
+
+        <!-- 订单明细 -->
+        <div v-show="showDetail" class="p-3vw bg-gray-50">
+          <div
+            v-for="(item, index) in orderItems"
+            :key="index"
+            class="flex justify-between items-center py-1.5vw border-b border-gray-200 last:border-0"
+          >
+            <span class="text-3.2vw text-gray-700">{{ item.foodName }} × {{ item.quantity }}</span>
+            <span class="text-3.2vw text-gray-800 font-medium">¥{{ (item.foodPrice * item.quantity).toFixed(2) }}</span>
+          </div>
+          <div class="flex justify-between items-center py-1.5vw border-b border-gray-200">
+            <span class="text-3.2vw text-gray-700">配送费</span>
+            <span class="text-3.2vw text-gray-800 font-medium">¥{{ (orderData.business?.deliveryPrice || 0).toFixed(2) }}</span>
+          </div>
+          <div class="flex justify-between items-center py-2vw mt-1vw bg-gray-100 px-2vw rounded-1.5vw">
+            <span class="text-3.5vw text-gray-800 font-bold">订单总价</span>
+            <span class="text-3.8vw text-orange-500 font-bold">¥{{ (orderData.orderTotal || 0).toFixed(2) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 支付方式 -->
+      <div class="bg-white rounded-2vw shadow-sm overflow-hidden mb-4vw">
+        <div class="p-3vw border-b border-gray-200">
+          <h3 class="text-4vw font-bold text-gray-800">选择支付方式</h3>
+        </div>
+
+        <div class="space-y-1vw">
+          <div
+            @click="selectPayment('alipay')"
+            :class="{ 'bg-blue-50': selectedPayment === 'alipay' }"
+            class="flex items-center justify-between p-3vw cursor-pointer hover:bg-gray-50"
+          >
+            <div class="flex items-center">
+              <div class="w-10vw h-10vw bg-blue-500 rounded-2vw flex items-center justify-center mr-3vw">
+                <span class="text-4.5vw text-white font-bold">支</span>
+              </div>
+              <div>
+                <p class="text-4vw text-gray-800 font-medium">支付宝支付</p>
+                <p class="text-3vw text-gray-500 mt-0.5vw">推荐使用支付宝</p>
+              </div>
+            </div>
+            <el-icon v-if="selectedPayment === 'alipay'" class="text-blue-500" size="5vw">
+              <CircleCheck />
+            </el-icon>
+          </div>
+
+          <div
+            @click="selectPayment('wechat')"
+            :class="{ 'bg-blue-50': selectedPayment === 'wechat' }"
+            class="flex items-center justify-between p-3vw cursor-pointer hover:bg-gray-50"
+          >
+            <div class="flex items-center">
+              <div class="w-10vw h-10vw bg-green-500 rounded-2vw flex items-center justify-center mr-3vw">
+                <span class="text-4.5vw text-white font-bold">微</span>
+              </div>
+              <div>
+                <p class="text-4vw text-gray-800 font-medium">微信支付</p>
+                <p class="text-3vw text-gray-500 mt-0.5vw">推荐使用微信</p>
+              </div>
+            </div>
+            <el-icon v-if="selectedPayment === 'wechat'" class="text-green-500" size="5vw">
+              <CircleCheck />
+            </el-icon>
+          </div>
+        </div>
+      </div>
+
+      <!-- 支付按钮 -->
+      <div class="p-3vw">
+        <el-button
+          @click="confirmPayment"
+          :disabled="isPaying || !orderData.orderId"
+          type="primary"
+          size="large"
+          class="w-full !h-12vw !text-4.5vw !font-bold !rounded-2vw"
+        >
+          {{ isPaying ? '支付中...' : `确认支付 ¥${(orderData.orderTotal || 0).toFixed(2)}` }}
+        </el-button>
+      </div>
     </div>
-
-    <!-- 订单明细部分 -->
-    <ul
-      class="order-detail"
-      v-show="showDetail"
-    >
-      <li
-        v-for="(item, index) in orderItems"
-        :key="index"
-      >
-        <p>
-          {{ item.foodName }} × {{ item.quantity }}
-        </p>
-        <p>
-          &#165;{{ (item.foodPrice * item.quantity).toFixed(2) }}
-        </p>
-      </li>
-
-      <li>
-        <p>配送费</p>
-        <p>&#165;{{ (orderData.business?.deliveryPrice || 0).toFixed(2) }}</p>
-      </li>
-
-      <li class="order-total">
-        <p>订单总价</p>
-        <p>&#165;{{ (orderData.orderTotal || 0).toFixed(2) }}</p>
-      </li>
-    </ul>
-
-    <!-- 支付方式部分 -->
-    <ul class="payment-type">
-      <li @click="selectPayment('alipay')" :class="{ 'selected': selectedPayment === 'alipay' }">
-        <img src="../assets/img/alipay.png" alt="支付宝" />
-        <i class="fa fa-check-circle" v-show="selectedPayment === 'alipay'"></i>
-      </li>
-      <li @click="selectPayment('wechat')" :class="{ 'selected': selectedPayment === 'wechat' }">
-        <img src="../assets/img/wechat.png" alt="微信支付" />
-        <i class="fa fa-check-circle" v-show="selectedPayment === 'wechat'"></i>
-      </li>
-    </ul>
-
-    <!-- 支付按钮 -->
-    <div class="payment-button">
-      <button @click="confirmPayment" :disabled="isPaying || !orderData.orderId">
-        {{ isPaying ? '支付中...' : '确认支付' }}
-      </button>
-    </div>
-
-    <!-- 底部菜单部分 -->
-    <Footer />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import {
+  ArrowLeft,
+  Document,
+  ArrowDown,
+  CircleCheck
+} from '@element-plus/icons-vue'
 import request from '../utils/request'
-import Footer from '../components/Footer.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -102,7 +155,7 @@ const orderItems = computed(() => {
 // 获取订单信息
 const fetchOrder = async () => {
   if (!orderId.value) {
-    alert('订单ID不能为空！')
+    ElMessage.warning('订单ID不能为空！')
     router.push({ path: '/index' })
     return
   }
@@ -113,32 +166,20 @@ const fetchOrder = async () => {
       { orderId: orderId.value }
     )
 
-    if (response && response.data) {
-      orderData.value = response.data
-    } else if (response && typeof response === 'object') {
-      orderData.value = response
-    }
+    orderData.value = response.data || response
 
     if (!orderData.value || !orderData.value.orderId) {
-      alert('订单信息不存在或已过期！')
+      ElMessage.warning('订单信息不存在或已过期！')
       router.push({ path: '/orderList' })
       return
     }
 
     if (orderData.value.orderState === 1) {
-      alert('订单已支付！')
+      ElMessage.warning('订单已支付！')
       router.push({ path: '/orderList' })
     }
   } catch (error) {
-    if (error.response) {
-      if (error.response.status === 404) {
-        alert('订单不存在！')
-      } else {
-        alert('获取订单信息失败！')
-      }
-    } else {
-      alert('网络连接失败！')
-    }
+    ElMessage.error('获取订单信息失败！')
     router.push({ path: '/index' })
   }
 }
@@ -156,23 +197,29 @@ const selectPayment = (type) => {
 // 确认支付
 const confirmPayment = async () => {
   if (!orderId.value || !orderData.value.orderId) {
-    alert('订单信息错误！')
+    ElMessage.error('订单信息错误！')
     return
   }
 
   if (orderData.value.orderState === 1) {
-    alert('订单已支付！')
+    ElMessage.warning('订单已支付！')
     router.push({ path: '/orderList' })
     return
   }
 
-  if (!confirm(`确定要支付 ¥${(orderData.value.orderTotal || 0).toFixed(2)} 吗？`)) {
-    return
-  }
-
-  isPaying.value = true
-
   try {
+    await ElMessageBox.confirm(
+      `确定要支付 ¥${(orderData.value.orderTotal || 0).toFixed(2)} 吗？`,
+      '确认支付',
+      {
+        confirmButtonText: '确认支付',
+        cancelButtonText: '取消',
+        type: 'warning',
+      }
+    )
+
+    isPaying.value = true
+
     const response = await request({
       method: 'post',
       url: '/OrdersController/payOrders',
@@ -191,212 +238,43 @@ const confirmPayment = async () => {
     }
 
     if (success) {
-      alert('支付成功！')
+      ElMessage.success('支付成功！')
       orderData.value.orderState = 1
 
       setTimeout(() => {
         router.push({ path: '/orderList' })
-      }, 800)
+      }, 1500)
     } else {
-      alert('支付失败！')
+      ElMessage.error('支付失败！')
       isPaying.value = false
     }
   } catch (error) {
-    alert('支付失败，请稍后重试！')
-    isPaying.value = false
+    if (error !== 'cancel') {
+      ElMessage.error('支付失败，请稍后重试！')
+      isPaying.value = false
+    }
   }
 }
 
 onMounted(() => {
   fetchOrder()
-  history.pushState({ page: 'payment' }, '', window.location.href)
-  window.addEventListener('popstate', () => {
-    router.push({ path: '/index' })
-  })
 })
 </script>
 
 <style scoped>
-/****************** 总容器 ******************/
-.wrapper {
-  width: 100%;
-  height: 100%;
-  background-color: #f5f5f5;
+.header-primary {
+  @apply w-full h-12vw bg-gradient-to-r from-blue-500 to-blue-600
+         flex items-center justify-between px-4vw fixed top-0 left-0 z-1000 shadow-md;
 }
 
-/****************** header部分 ******************/
-.wrapper header {
-  width: 100%;
-  height: 12vw;
-  background-color: #0097ff;
-  color: #fff;
-  font-size: 4.8vw;
-  position: fixed;
-  left: 0;
-  top: 0;
-  z-index: 1000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-/****************** 订单信息部分 ******************/
-.wrapper h3 {
-  margin-top: 12vw;
-  box-sizing: border-box;
-  padding: 4vw 4vw 0;
-  font-size: 4vw;
-  font-weight: 300;
-  color: #666;
-  background-color: #fff;
-}
-
-.wrapper .order-info {
-  box-sizing: border-box;
-  padding: 4vw;
-  font-size: 4.2vw;
-  color: #333;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: #fff;
-  border-bottom: 1px solid #eee;
-  cursor: pointer;
-}
-
-.wrapper .order-info p:first-child {
-  display: flex;
-  align-items: center;
-  gap: 2vw;
-  font-weight: bold;
-}
-
-.wrapper .order-info p:last-child {
-  color: #ff6000;
-  font-weight: bold;
-  font-size: 4.8vw;
-}
-
-.wrapper .order-info .fa-caret-down {
-  font-size: 5vw;
-  color: #999;
-  transition: transform 0.3s;
-}
-
-.wrapper .order-info .fa-caret-down.rotated {
+.rotate-180 {
   transform: rotate(180deg);
+  transition: transform 0.3s ease;
 }
 
-/****************** 订单明细部分 ******************/
-.wrapper .order-detail {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  background-color: #fff;
-  border-bottom: 1px solid #eee;
-}
-
-.wrapper .order-detail li {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 3vw 4vw;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #f5f5f5;
-}
-
-.wrapper .order-detail li:last-child {
-  border-bottom: none;
-}
-
-.wrapper .order-detail li p {
-  font-size: 3.6vw;
-  color: #666;
-}
-
-.wrapper .order-detail li.order-total {
-  background-color: #f9f9f9;
-}
-
-.wrapper .order-detail li.order-total p {
-  font-weight: bold;
-  color: #333;
-}
-
-.wrapper .order-detail li.order-total p:last-child {
-  color: #ff6000;
-  font-size: 4vw;
-}
-
-/****************** 支付方式部分 ******************/
-.wrapper .payment-type {
-  list-style: none;
-  padding: 0;
-  margin: 3vw 0 0;
-  background-color: #fff;
-}
-
-.wrapper .payment-type li {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 4vw;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #eee;
-  cursor: pointer;
-}
-
-.wrapper .payment-type li.selected {
-  background-color: #f0f9ff;
-}
-
-.wrapper .payment-type li img {
-  width: 33vw;
-  height: 8.9vw;
-  object-fit: contain;
-}
-
-.wrapper .payment-type li .fa-check-circle {
-  font-size: 5vw;
-  color: #38ca73;
-}
-
-/****************** 支付按钮 ******************/
-.wrapper .payment-button {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 6vw 4vw;
-  background-color: #f5f5f5;
-}
-
-.wrapper .payment-button button {
-  width: 100%;
-  height: 12vw;
-  border: none;
-  outline: none;
-  border-radius: 6px;
-  background-color: #38ca73;
-  color: #fff;
-  font-size: 4.5vw;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.wrapper .payment-button button:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
-
-/* 响应式调整 */
-@media (max-width: 768px) {
-  .wrapper .order-info p:last-child {
-    font-size: 4.2vw;
-  }
-
-  .wrapper .payment-button button {
-    height: 10vw;
-  }
+:deep(.el-button.is-disabled) {
+  background-color: #ccc !important;
+  border-color: #ccc !important;
+  cursor: not-allowed !important;
 }
 </style>

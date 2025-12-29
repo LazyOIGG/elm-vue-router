@@ -1,77 +1,96 @@
 <template>
-  <div class="wrapper">
-    <!-- header部分 -->
-    <header>
-      <p>确认订单</p>
+  <div class="w-full h-full bg-gray-100">
+    <!-- 头部 -->
+    <header class="header-primary">
+      <el-button
+        @click="router.back()"
+        type="primary"
+        :icon="ArrowLeft"
+        size="large"
+        circle
+        class="!p-0 !w-8vw !h-8vw !bg-transparent !border-0 !shadow-none hover:!bg-blue-400"
+      />
+      <h1 class="text-4.5vw text-white font-bold">确认订单</h1>
+      <div class="w-8vw"></div>
     </header>
 
-    <!-- 订单信息部分 -->
-    <div class="order-info">
-      <h5>订单配送至：</h5>
-
+    <!-- 订单内容 -->
+    <div class="w-full mt-12vw pb-20vw">
+      <!-- 配送地址 -->
       <div
-        class="order-info-address"
         @click="toUserAddress"
+        class="mx-3vw mt-3vw bg-gradient-to-r from-blue-500 to-blue-600 rounded-2vw p-4vw text-white cursor-pointer"
       >
-        <p>
-          {{ deliveryAddress
-            ? deliveryAddress.address
-            : '请选择送货地址' }}
-        </p>
-        <i class="fa fa-angle-right"></i>
-      </div>
-
-      <!-- 显示地址中的联系人信息 -->
-      <p v-if="deliveryAddress">
-        {{ deliveryAddress.contactName }}
-        {{ sexFilter(deliveryAddress.contactSex) }}
-        {{ deliveryAddress.contactTel }}
-      </p>
-      <p v-else>
-        {{ user.userName }}
-        {{ sexFilter(user.userSex) }}
-        {{ user.userPhone || user.userId }}
-      </p>
-    </div>
-
-    <h3>{{ business.businessName }}</h3>
-
-    <!-- 订单明细部分 -->
-    <ul class="order-detailed">
-      <li
-        v-for="item in foodArr"
-        :key="item.foodId"
-        v-show="item.quantity > 0"
-      >
-        <div class="order-detailed-left">
-          <img :src="item.foodImg" />
-          <p>
-            {{ item.foodName }} × {{ item.quantity }}
-          </p>
+        <div class="flex items-center justify-between mb-2vw">
+          <div class="flex items-center">
+            <el-icon size="4.5vw" class="mr-2vw"><Location /></el-icon>
+            <span class="text-3.5vw font-medium">订单配送至</span>
+          </div>
+          <el-icon size="4.5vw"><ArrowRight /></el-icon>
         </div>
-        <p>
-          &#165;{{ (item.foodPrice * item.quantity).toFixed(2) }}
+
+        <p class="text-4.5vw font-bold truncate mb-1vw">
+          {{ deliveryAddress ? deliveryAddress.address : '请选择送货地址' }}
         </p>
-      </li>
-    </ul>
 
-    <!-- 配送费 -->
-    <div class="order-deliveryfee">
-      <p>配送费</p>
-      <p>&#165;{{ business.deliveryPrice }}</p>
-    </div>
-
-    <!-- 合计部分 -->
-    <div class="total">
-      <div class="total-left">
-        &#165;{{ totalPrice.toFixed(2) }}
+        <p class="text-3.2vw opacity-90">
+          {{ deliveryAddress
+            ? `${deliveryAddress.contactName} ${sexFilter(deliveryAddress.contactSex)} ${deliveryAddress.contactTel}`
+            : `${user.userName} ${sexFilter(user.userSex)} ${user.userPhone || user.userId}`
+          }}
+        </p>
       </div>
-      <div
-        class="total-right"
-        @click="toPayment"
-        :style="!deliveryAddress ? 'background-color:#ccc;cursor:not-allowed;' : 'background-color:#38ca73;'"
-      >
-        去支付
+
+      <!-- 商家信息 -->
+      <div class="mx-3vw mt-4vw bg-white rounded-2vw shadow-sm p-3vw">
+        <div class="flex items-center mb-3vw">
+          <el-icon class="text-blue-500 mr-2vw"><Shop /></el-icon>
+          <h3 class="text-4vw font-bold text-gray-800">{{ business.businessName }}</h3>
+        </div>
+
+        <!-- 商品列表 -->
+        <div class="space-y-3vw">
+          <div
+            v-for="item in foodArr"
+            :key="item.foodId"
+            v-show="item.quantity > 0"
+            class="flex items-center p-2vw border-b border-gray-100 last:border-0"
+          >
+            <img :src="item.foodImg" class="w-16vw h-16vw rounded-2vw object-cover flex-shrink-0" />
+            <div class="ml-3vw flex-1 min-w-0">
+              <p class="text-3.8vw text-gray-800 font-medium truncate">{{ item.foodName }}</p>
+              <p class="text-3.2vw text-gray-500">× {{ item.quantity }}</p>
+            </div>
+            <span class="text-3.8vw text-gray-800 font-bold">¥{{ (item.foodPrice * item.quantity).toFixed(2) }}</span>
+          </div>
+        </div>
+
+        <!-- 配送费 -->
+        <div class="flex justify-between items-center pt-3vw mt-3vw border-t border-gray-200">
+          <span class="text-3.5vw text-gray-700">配送费</span>
+          <span class="text-3.8vw text-gray-800 font-bold">¥{{ business.deliveryPrice }}</span>
+        </div>
+      </div>
+
+      <!-- 合计金额 -->
+      <div class="fixed bottom-16vw left-0 w-full px-3vw z-100">
+        <div class="bg-white rounded-2vw shadow-lg p-3vw">
+          <div class="flex justify-between items-center">
+            <div>
+              <p class="text-3.5vw text-gray-500">合计</p>
+              <p class="text-4.5vw text-orange-500 font-bold">¥{{ totalPrice.toFixed(2) }}</p>
+            </div>
+            <el-button
+              @click="toPayment"
+              type="primary"
+              size="large"
+              :disabled="!deliveryAddress || foodArr.every(item => item.quantity <= 0)"
+              class="!h-12vw !text-4vw !font-bold !rounded-2vw !px-6vw"
+            >
+              去支付
+            </el-button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -80,6 +99,13 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import {
+  ArrowLeft,
+  Location,
+  ArrowRight,
+  Shop
+} from '@element-plus/icons-vue'
 import request from '../utils/request'
 
 const route = useRoute()
@@ -109,7 +135,7 @@ onMounted(async () => {
   user.value = getSessionStorage('user')
 
   if (!user.value || !user.value.userId) {
-    alert('请先登录！')
+    ElMessage.warning('请先登录！')
     router.push({ path: '/login' })
     return
   }
@@ -120,7 +146,7 @@ onMounted(async () => {
   }
 
   if (!businessId.value) {
-    alert('商家ID不能为空！')
+    ElMessage.warning('商家ID不能为空！')
     router.back()
     return
   }
@@ -131,26 +157,19 @@ onMounted(async () => {
       { businessId: businessId.value }
     )
 
-    if (businessRes && businessRes.data) {
-      business.value = businessRes.data
-    } else {
-      business.value = businessRes
-    }
+    business.value = businessRes.data || businessRes
 
     const foodRes = await request.post(
       '/FoodController/listFoodByBusinessId',
       { businessId: businessId.value }
     )
 
-    if (foodRes && foodRes.data) {
-      foodArr.value = foodRes.data.map(item => ({ ...item, quantity: 0 }))
-    } else {
-      foodArr.value = foodRes.map(item => ({ ...item, quantity: 0 }))
-    }
+    const foodData = foodRes.data || foodRes
+    foodArr.value = foodData.map(item => ({ ...item, quantity: 0 }))
 
     await listCart()
   } catch (error) {
-    alert('加载订单信息失败，请稍后重试！')
+    ElMessage.error('加载订单信息失败，请稍后重试！')
   }
 })
 
@@ -176,13 +195,12 @@ const listCart = async () => {
       })
     })
   } catch (error) {
-    alert('获取购物车失败')
+    ElMessage.error('获取购物车失败')
   }
 }
 
 const sexFilter = (value) => {
-  return value === 1 ? '先生' :
-         value === 2 ? '女士' : ''
+  return value === 1 ? '先生' : '女士'
 }
 
 // 计算总价
@@ -208,13 +226,13 @@ const toUserAddress = () => {
 
 const toPayment = async () => {
   if (!deliveryAddress.value) {
-    alert('请选择送货地址！')
+    ElMessage.warning('请选择送货地址！')
     return
   }
 
   const selectedItems = foodArr.value.filter(item => item.quantity > 0)
   if (selectedItems.length === 0) {
-    alert('请选择要购买的商品！')
+    ElMessage.warning('请选择要购买的商品！')
     return
   }
 
@@ -238,188 +256,23 @@ const toPayment = async () => {
         query: { orderId }
       })
     } else {
-      alert('创建订单失败！')
+      ElMessage.error('创建订单失败！')
     }
   } catch (error) {
-    alert('创建订单失败，请稍后重试！')
+    ElMessage.error('创建订单失败，请稍后重试！')
   }
 }
 </script>
 
 <style scoped>
-/****************** 总容器 ******************/
-.wrapper {
-  width: 100%;
-  height: 100%;
+.header-primary {
+  @apply w-full h-12vw bg-gradient-to-r from-blue-500 to-blue-600
+         flex items-center justify-between px-4vw fixed top-0 left-0 z-1000 shadow-md;
 }
 
-/****************** header部分 ******************/
-.wrapper header {
-  width: 100%;
-  height: 12vw;
-  background-color: #0097ff;
-  color: #fff;
-  font-size: 4.8vw;
-  position: fixed;
-  left: 0;
-  top: 0;
-  z-index: 1000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-/****************** 订单信息部分 ******************/
-.wrapper .order-info {
-  width: 100%;
-  margin-top: 12vw;
-  background-color: #0097ef;
-  box-sizing: border-box;
-  padding: 2vw;
-  color: #fff;
-}
-
-.wrapper .order-info h5 {
-  font-size: 3vw;
-  font-weight: 300;
-}
-
-.wrapper .order-info .order-info-address {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-weight: 700;
-  user-select: none;
-  cursor: pointer;
-  margin: 1vw 0;
-}
-
-.wrapper .order-info .order-info-address p {
-  width: 90%;
-  font-size: 5vw;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.wrapper .order-info .order-info-address i {
-  font-size: 6vw;
-}
-
-.wrapper .order-info p {
-  font-size: 3vw;
-  margin-top: 1vw;
-}
-
-.wrapper h3 {
-  box-sizing: border-box;
-  padding: 3vw;
-  font-size: 4vw;
-  color: #666;
-  border-bottom: solid 1px #ddd;
-  background-color: #fff;
-}
-
-/****************** 订单明细部分 ******************/
-.wrapper .order-detailed {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  background-color: #fff;
-}
-
-.wrapper .order-detailed li {
-  width: 100%;
-  height: 16vw;
-  box-sizing: border-box;
-  padding: 3vw;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: #666;
-  border-bottom: solid 1px #eee;
-}
-
-.wrapper .order-detailed-left {
-  display: flex;
-  align-items: center;
-  flex: 1;
-}
-
-.wrapper .order-detailed-left img {
-  width: 10vw;
-  height: 10vw;
-  border-radius: 4px;
-  object-fit: cover;
-  flex-shrink: 0;
-}
-
-.wrapper .order-detailed-left p {
-  font-size: 3.5vw;
-  margin-left: 3vw;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.wrapper .order-detailed li p {
-  font-size: 3.5vw;
-  font-weight: bold;
-  color: #ff6000;
-  flex-shrink: 0;
-}
-
-.wrapper .order-deliveryfee {
-  width: 100%;
-  height: 16vw;
-  box-sizing: border-box;
-  padding: 3vw;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 3.5vw;
-  color: #666;
-  background-color: #fff;
-  border-bottom: solid 1px #eee;
-}
-
-/****************** 订单合计部分 ******************/
-.wrapper .total {
-  width: 100%;
-  height: 14vw;
-  position: fixed;
-  left: 0;
-  bottom: 0;
-  display: flex;
-  z-index: 1000;
-}
-
-.wrapper .total .total-left {
-  flex: 2;
-  background-color: #505051;
-  color: #fff;
-  font-size: 4.5vw;
-  font-weight: 700;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.wrapper .total .total-right {
-  flex: 1;
-  background-color: #38ca73;
-  color: #fff;
-  font-size: 4.5vw;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: background-color 0.2s;
-}
-
-.wrapper .total .total-right:active {
-  background-color: #2da85c;
+:deep(.el-button.is-disabled) {
+  background-color: #ccc !important;
+  border-color: #ccc !important;
+  cursor: not-allowed !important;
 }
 </style>

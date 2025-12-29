@@ -1,60 +1,99 @@
 <template>
-  <div class="wrapper">
-    <!-- header部分 -->
-    <header>
-      <p>地址管理</p>
+  <div class="w-full h-full bg-gray-100">
+    <!-- 头部 -->
+    <header class="header-primary">
+      <el-button
+        @click="router.back()"
+        type="primary"
+        :icon="ArrowLeft"
+        size="large"
+        circle
+        class="!p-0 !w-8vw !h-8vw !bg-transparent !border-0 !shadow-none hover:!bg-blue-400"
+      />
+      <h1 class="text-4.5vw text-white font-bold">地址管理</h1>
+      <div class="w-8vw"></div>
     </header>
 
-    <!-- 地址列表部分 -->
-    <ul class="addresslist">
-      <li
-        v-for="item in deliveryAddressArr"
-        :key="item.daId"
-      >
+    <!-- 地址列表 -->
+    <div class="w-full mt-12vw px-3vw pb-16vw">
+      <!-- 地址列表 -->
+      <div v-if="deliveryAddressArr.length > 0" class="space-y-2vw">
         <div
-          class="addresslist-left"
-          @click="setDeliveryAddress(item)"
+          v-for="item in deliveryAddressArr"
+          :key="item.daId"
+          class="bg-white rounded-2vw shadow-sm overflow-hidden"
         >
-          <h3>
-            {{ item.contactName }}
-            {{ sexFilter(item.contactSex) }}
-            {{ item.contactTel }}
-          </h3>
-          <p>{{ item.address }}</p>
-        </div>
+          <div class="p-4vw">
+            <div
+              @click="setDeliveryAddress(item)"
+              class="mb-3vw cursor-pointer"
+            >
+              <h3 class="text-4vw text-gray-800 font-bold mb-1vw">
+                {{ item.contactName }} {{ sexFilter(item.contactSex) }}
+              </h3>
+              <p class="text-3.8vw text-gray-700 font-medium">{{ item.contactTel }}</p>
+              <p class="text-3.5vw text-gray-600 mt-2vw line-clamp-2">{{ item.address }}</p>
+            </div>
 
-        <div class="addresslist-right">
-          <i
-            class="fa fa-edit"
-            @click="editUserAddress(item.daId)"
-          ></i>
-          <i
-            class="fa fa-remove"
-            @click="removeUserAddress(item.daId)"
-          ></i>
+            <div class="flex justify-end items-center pt-3vw border-t border-gray-200">
+              <el-button
+                @click.stop="editUserAddress(item.daId)"
+                type="primary"
+                size="small"
+                class="!h-8vw !text-3.2vw !px-4vw !mr-2vw"
+              >
+                编辑
+              </el-button>
+              <el-button
+                @click.stop="removeUserAddress(item.daId)"
+                type="danger"
+                size="small"
+                class="!h-8vw !text-3.2vw !px-4vw"
+              >
+                删除
+              </el-button>
+            </div>
+          </div>
         </div>
-      </li>
-    </ul>
+      </div>
 
-    <!-- 新增地址部分 -->
-    <div
-      class="addbtn"
-      @click="toAddUserAddress"
-    >
-      <i class="fa fa-plus-circle"></i>
-      <p>新增收货地址</p>
+      <!-- 空状态 -->
+      <div v-else class="mt-15vw text-center">
+        <el-icon size="20vw" color="#909399">
+          <Location />
+        </el-icon>
+        <p class="text-4vw text-gray-500 mt-4vw">暂无地址信息</p>
+        <p class="text-3.2vw text-gray-400 mt-2vw">请添加收货地址</p>
+      </div>
+
+      <!-- 新增地址按钮 -->
+      <div class="fixed bottom-16vw left-0 w-full px-3vw z-100">
+        <el-button
+          @click="toAddUserAddress"
+          type="primary"
+          size="large"
+          class="w-full !h-12vw !text-4.5vw !font-bold !rounded-2vw shadow-lg"
+        >
+          <el-icon class="mr-2vw">
+            <Plus />
+          </el-icon>
+          新增收货地址
+        </el-button>
+      </div>
     </div>
-
-    <!-- 底部菜单部分 -->
-    <Footer />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import {
+  ArrowLeft,
+  Location,
+  Plus
+} from '@element-plus/icons-vue'
 import request from '../utils/request'
-import Footer from '../components/Footer.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -89,7 +128,10 @@ const sexFilter = (value) => {
 // 获取用户地址列表
 const fetchDeliveryAddresses = async () => {
   const user = getSessionStorage('user')
-  if (!user) return
+  if (!user) {
+    router.push('/login')
+    return
+  }
 
   try {
     const response = await request.post(
@@ -98,7 +140,7 @@ const fetchDeliveryAddresses = async () => {
     )
     deliveryAddressArr.value = response
   } catch (error) {
-    alert('获取地址列表失败')
+    ElMessage.error('获取地址列表失败')
   }
 }
 
@@ -108,10 +150,16 @@ const setDeliveryAddress = (deliveryAddress) => {
   if (!user) return
 
   setLocalStorage(user.userId, deliveryAddress)
-  router.push({
-    path: '/orders',
-    query: { businessId: businessId.value }
-  })
+
+  // 如果是从订单页面跳转过来的，返回订单页面
+  if (businessId.value) {
+    router.push({
+      path: '/orders',
+      query: { businessId: businessId.value }
+    })
+  } else {
+    ElMessage.success('默认地址已设置')
+  }
 }
 
 // 跳转新增地址页
@@ -135,11 +183,17 @@ const editUserAddress = (daId) => {
 
 // 删除地址
 const removeUserAddress = async (daId) => {
-  if (!confirm('确认要删除此送货地址吗？')) {
-    return
-  }
-
   try {
+    await ElMessageBox.confirm(
+      '确认要删除此送货地址吗？',
+      '删除地址',
+      {
+        confirmButtonText: '删除',
+        cancelButtonText: '取消',
+        type: 'warning',
+      }
+    )
+
     const response = await request.delete(
       'DeliveryAddressController/removeDeliveryAddress',
       { data: { daId } }
@@ -154,11 +208,14 @@ const removeUserAddress = async (daId) => {
         }
       }
       await fetchDeliveryAddresses()
+      ElMessage.success('地址删除成功')
     } else {
-      alert('删除地址失败！')
+      ElMessage.error('删除地址失败！')
     }
   } catch (error) {
-    alert('删除地址失败')
+    if (error !== 'cancel') {
+      ElMessage.error('删除地址失败')
+    }
   }
 }
 
@@ -168,89 +225,15 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/*************** 总容器 ***************/
-.wrapper {
-  width: 100%;
-  height: 100%;
-  background-color: #f5f5f5;
+.header-primary {
+  @apply w-full h-12vw bg-gradient-to-r from-blue-500 to-blue-600
+         flex items-center justify-between px-4vw fixed top-0 left-0 z-1000 shadow-md;
 }
 
-/*************** header ***************/
-.wrapper header {
-  width: 100%;
-  height: 12vw;
-  background-color: #0097ff;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  color: #fff;
-  font-size: 4.8vw;
-  position: fixed;
-  left: 0;
-  top: 0;
-  z-index: 1000;
-}
-
-/*************** 地址列表 ***************/
-.wrapper .addresslist {
-  width: 100%;
-  margin-top: 12vw;
-  background-color: #fff;
-}
-
-.wrapper .addresslist li {
-  width: 100%;
-  box-sizing: border-box;
-  border-bottom: solid 1px #ddd;
-  padding: 3vw;
-  display: flex;
-}
-
-.wrapper .addresslist-left {
-  flex: 5;
-  user-select: none;
-  cursor: pointer;
-}
-
-.wrapper .addresslist-left h3 {
-  font-size: 4.6vw;
-  font-weight: 300;
-  color: #666;
-}
-
-.wrapper .addresslist-left p {
-  font-size: 4vw;
-  color: #666;
-}
-
-.wrapper .addresslist-right {
-  flex: 1;
-  font-size: 5.6vw;
-  color: #999;
-  cursor: pointer;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-}
-
-/*************** 新增地址 ***************/
-.wrapper .addbtn {
-  width: 100%;
-  height: 14vw;
-  border-top: solid 1px #ddd;
-  border-bottom: solid 1px #ddd;
-  background-color: #fff;
-  margin-top: 4vw;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 4.5vw;
-  color: #0097ff;
-  user-select: none;
-  cursor: pointer;
-}
-
-.wrapper .addbtn p {
-  margin-left: 2vw;
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 </style>
