@@ -1,67 +1,160 @@
 <template>
-  <div class="wrapper">
-    <!-- header部分 -->
-    <header>
-      <p>我的订单</p>
+  <div class="w-full h-full bg-gray-100">
+    <!-- 头部 -->
+    <header class="header-primary">
+      <el-button
+        @click="router.back()"
+        type="primary"
+        :icon="ArrowLeft"
+        size="large"
+        circle
+        class="!p-0 !w-8vw !h-8vw !bg-transparent !border-0 !shadow-none hover:!bg-blue-400"
+      />
+      <h1 class="text-4.5vw text-white font-bold">我的订单</h1>
+      <div class="w-8vw"></div>
     </header>
 
-    <!-- 未支付订单列表 -->
-    <h3>未支付订单信息：</h3>
-    <ul class="order">
-      <li v-for="item in unpaidOrders" :key="item.orderId">
-        <div class="order-info">
-          <p>
-            {{ item.business.businessName }}
-            <i class="fa fa-caret-down" @click="toggleDetail(item)"></i>
-          </p>
-          <div class="order-info-right">
-            <p>&#165;{{ item.orderTotal }}</p>
+    <!-- 订单列表 -->
+    <div class="w-full mt-12vw px-3vw pb-16vw">
+      <!-- 未支付订单 -->
+      <div v-if="unpaidOrders.length > 0" class="mb-6vw">
+        <div class="flex items-center mb-3vw">
+          <el-icon class="text-orange-500 mr-2vw"><Clock /></el-icon>
+          <h3 class="text-4vw font-bold text-gray-800">待支付订单</h3>
+          <span class="ml-2vw px-2vw py-0.5vw bg-orange-100 text-orange-600 text-2.5vw rounded-full">
+            {{ unpaidOrders.length }}
+          </span>
+        </div>
+
+        <div class="space-y-3vw">
+          <div
+            v-for="item in unpaidOrders"
+            :key="item.orderId"
+            class="bg-white rounded-2vw shadow-sm border border-gray-100 overflow-hidden"
+          >
+            <!-- 订单头部 -->
+            <div class="p-3vw border-b border-gray-200">
+              <div class="flex justify-between items-center mb-2vw">
+                <div class="flex items-center">
+                  <el-icon class="text-blue-500 mr-2vw"><Shop /></el-icon>
+                  <span class="text-4vw font-bold text-gray-800">{{ item.business.businessName }}</span>
+                </div>
+                <el-button
+                  @click="goToPayment(item.orderId)"
+                  type="primary"
+                  size="small"
+                  class="!px-3vw !py-1.5vw !text-3vw !rounded-2vw"
+                >
+                  去支付
+                </el-button>
+              </div>
+              <div class="flex justify-between text-3.2vw text-gray-600">
+                <span>订单号: {{ item.orderId }}</span>
+                <span class="text-orange-500 font-bold">¥{{ item.orderTotal }}</span>
+              </div>
+            </div>
+
+            <!-- 订单明细 -->
+            <div v-show="item.isShowDetailet" class="p-3vw bg-gray-50">
+              <div
+                v-for="odItem in item.list"
+                :key="odItem.food.foodId"
+                class="flex justify-between items-center py-1.5vw border-b border-gray-200 last:border-0"
+              >
+                <span class="text-3.2vw text-gray-700">{{ odItem.food.foodName }} × {{ odItem.quantity }}</span>
+                <span class="text-3.2vw text-gray-800 font-medium">¥{{ odItem.food.foodPrice * odItem.quantity }}</span>
+              </div>
+              <div class="flex justify-between items-center py-1.5vw">
+                <span class="text-3.2vw text-gray-700">配送费</span>
+                <span class="text-3.2vw text-gray-800 font-medium">¥{{ item.business.deliveryPrice }}</span>
+              </div>
+            </div>
+
+            <!-- 展开/收起按钮 -->
             <div
-              class="order-info-right-icon"
-              @click="goToPayment(item.orderId)"
+              @click="toggleDetail(item)"
+              class="flex justify-center items-center py-2vw bg-gray-50 border-t border-gray-200 cursor-pointer"
             >
-              去支付
+              <el-icon class="text-gray-500" :class="{ 'rotate-180': item.isShowDetailet }">
+                <ArrowDown />
+              </el-icon>
+              <span class="ml-1vw text-3vw text-gray-500">{{ item.isShowDetailet ? '收起明细' : '查看明细' }}</span>
             </div>
           </div>
         </div>
-        <ul class="order-detailet" v-show="item.isShowDetailet">
-          <li v-for="odItem in item.list" :key="odItem.food.foodId">
-            <p>{{ odItem.food.foodName }} x {{ odItem.quantity }}</p>
-            <p>&#165;{{ odItem.food.foodPrice * odItem.quantity }}</p>
-          </li>
-          <li>
-            <p>配送费</p>
-            <p>&#165;{{ item.business.deliveryPrice }}</p>
-          </li>
-        </ul>
-      </li>
-    </ul>
+      </div>
 
-    <!-- 已支付订单列表 -->
-    <h3>已支付订单信息：</h3>
-    <ul class="order">
-      <li v-for="item in paidOrders" :key="item.orderId">
-        <div class="order-info">
-          <p>
-            {{ item.business.businessName }}
-            <i class="fa fa-caret-down" @click="toggleDetail(item)"></i>
-          </p>
-          <div class="order-info-right">
-            <p>&#165;{{ item.orderTotal }}</p>
+      <!-- 已支付订单 -->
+      <div v-if="paidOrders.length > 0">
+        <div class="flex items-center mb-3vw">
+          <el-icon class="text-green-500 mr-2vw"><CircleCheck /></el-icon>
+          <h3 class="text-4vw font-bold text-gray-800">已完成订单</h3>
+          <span class="ml-2vw px-2vw py-0.5vw bg-green-100 text-green-600 text-2.5vw rounded-full">
+            {{ paidOrders.length }}
+          </span>
+        </div>
+
+        <div class="space-y-3vw">
+          <div
+            v-for="item in paidOrders"
+            :key="item.orderId"
+            class="bg-white rounded-2vw shadow-sm border border-gray-100 overflow-hidden"
+          >
+            <!-- 订单头部 -->
+            <div class="p-3vw border-b border-gray-200">
+              <div class="flex justify-between items-center mb-2vw">
+                <div class="flex items-center">
+                  <el-icon class="text-green-500 mr-2vw"><Shop /></el-icon>
+                  <span class="text-4vw font-bold text-gray-800">{{ item.business.businessName }}</span>
+                </div>
+                <span class="px-2vw py-0.5vw bg-green-100 text-green-600 text-2.8vw rounded-full">
+                  已支付
+                </span>
+              </div>
+              <div class="flex justify-between text-3.2vw text-gray-600">
+                <span>订单号: {{ item.orderId }}</span>
+                <span class="text-green-500 font-bold">¥{{ item.orderTotal }}</span>
+              </div>
+            </div>
+
+            <!-- 订单明细 -->
+            <div v-show="item.isShowDetailet" class="p-3vw bg-gray-50">
+              <div
+                v-for="odItem in item.list"
+                :key="odItem.food.foodId"
+                class="flex justify-between items-center py-1.5vw border-b border-gray-200 last:border-0"
+              >
+                <span class="text-3.2vw text-gray-700">{{ odItem.food.foodName }} × {{ odItem.quantity }}</span>
+                <span class="text-3.2vw text-gray-800 font-medium">¥{{ odItem.food.foodPrice * odItem.quantity }}</span>
+              </div>
+              <div class="flex justify-between items-center py-1.5vw">
+                <span class="text-3.2vw text-gray-700">配送费</span>
+                <span class="text-3.2vw text-gray-800 font-medium">¥{{ item.business.deliveryPrice }}</span>
+              </div>
+            </div>
+
+            <!-- 展开/收起按钮 -->
+            <div
+              @click="toggleDetail(item)"
+              class="flex justify-center items-center py-2vw bg-gray-50 border-t border-gray-200 cursor-pointer"
+            >
+              <el-icon class="text-gray-500" :class="{ 'rotate-180': item.isShowDetailet }">
+                <ArrowDown />
+              </el-icon>
+              <span class="ml-1vw text-3vw text-gray-500">{{ item.isShowDetailet ? '收起明细' : '查看明细' }}</span>
+            </div>
           </div>
         </div>
-        <ul class="order-detailet" v-show="item.isShowDetailet">
-          <li v-for="odItem in item.list" :key="odItem.food.foodId">
-            <p>{{ odItem.food.foodName }} x {{ odItem.quantity }}</p>
-            <p>&#165;{{ odItem.food.foodPrice * odItem.quantity }}</p>
-          </li>
-          <li>
-            <p>配送费</p>
-            <p>&#165;{{ item.business.deliveryPrice }}</p>
-          </li>
-        </ul>
-      </li>
-    </ul>
+      </div>
+
+      <!-- 空状态 -->
+      <div v-if="orderArr.length === 0" class="mt-20vw text-center">
+        <el-icon size="20vw" color="#909399">
+          <Document />
+        </el-icon>
+        <p class="text-4vw text-gray-500 mt-4vw">暂无订单</p>
+      </div>
+    </div>
 
     <!-- 底部菜单 -->
     <Footer />
@@ -71,6 +164,15 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import {
+  ArrowLeft,
+  Shop,
+  Clock,
+  CircleCheck,
+  ArrowDown,
+  Document
+} from '@element-plus/icons-vue'
 import request from '../utils/request'
 import Footer from '../components/Footer.vue'
 
@@ -109,7 +211,7 @@ const fetchOrders = async () => {
     }))
     orderArr.value = result
   } catch (error) {
-    alert('获取订单列表失败')
+    ElMessage.error('获取订单列表失败')
   }
 }
 
@@ -132,89 +234,13 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/****************** 总容器 ******************/
-.wrapper {
-  width: 100%;
-  height: 100%;
+.header-primary {
+  @apply w-full h-12vw bg-gradient-to-r from-blue-500 to-blue-600
+         flex items-center justify-between px-4vw fixed top-0 left-0 z-1000 shadow-md;
 }
 
-/****************** header部分 ******************/
-.wrapper header {
-  width: 100%;
-  height: 12vw;
-  background-color: #0097FF;
-  color: #fff;
-  font-size: 4.8vw;
-  position: fixed;
-  left: 0;
-  top: 0;
-  z-index: 1000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-/****************** 历史订单列表部分 ******************/
-.wrapper h3 {
-  margin-top: 12vw;
-  box-sizing: border-box;
-  padding: 4vw;
-  font-size: 4vw;
-  font-weight: 300;
-  color: #999;
-}
-
-.wrapper .order {
-  width: 100%;
-}
-
-.wrapper .order li {
-  width: 100%;
-}
-
-.wrapper .order li .order-info {
-  box-sizing: border-box;
-  padding: 2vw 4vw;
-  font-size: 4vw;
-  color: #666;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.wrapper .order li .order-info .order-info-right {
-  display: flex;
-  align-items: center;
-}
-
-.wrapper .order li .order-info .order-info-right .order-info-right-icon {
-  background-color: #f90;
-  color: #fff;
-  border-radius: 3px;
-  margin-left: 2vw;
-  padding: 1vw 2vw;
-  font-size: 3.5vw;
-  user-select: none;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.wrapper .order li .order-info .order-info-right .order-info-right-icon:hover {
-  background-color: #e68900;
-}
-
-.wrapper .order li .order-detailet {
-  width: 100%;
-}
-
-.wrapper .order li .order-detailet li {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 1vw 4vw;
-  color: #666;
-  font-size: 3vw;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.rotate-180 {
+  transform: rotate(180deg);
+  transition: transform 0.3s ease;
 }
 </style>
