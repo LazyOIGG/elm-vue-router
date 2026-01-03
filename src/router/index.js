@@ -68,7 +68,7 @@ const router = createRouter({
             component: () => import('../views/OrderList.vue')
         },
         {
-            path: '/profile',  // 新增个人信息页路由
+            path: '/profile',
             name: 'profile',
             component: () => import('../views/Profile.vue')
         }
